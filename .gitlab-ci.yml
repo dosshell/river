@@ -9,7 +9,7 @@ before_script:
 flake8:
   script:
     - python -m pip install flake8
-    - python -m flake8
+    - python -m flake8 --ignore=E501
 
 unit_tests:
   script:
