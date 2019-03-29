@@ -11,7 +11,8 @@ def totp(priv_key: bytes,
          unixtime: int = int(time.time())) -> int:
     raw_key: bytes = base64.b32decode(priv_key)
     tc: int = math.floor(unixtime / period)
-    return hotp(raw_key, tc)
+    a: int = hotp(raw_key, tc)
+    return str(a).zfill(6)
 
 
 def hotp(key: bytes, msg: int, digits: int = 6) -> int:
