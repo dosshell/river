@@ -5,8 +5,12 @@ variables:
 
 before_script:
   - python -V
-  - python -m pip install flake8
 
 flake8:
-   script:
-   - python -m flake8
+  script:
+    - python -m pip install flake8
+    - python -m flake8
+
+unit_tests:
+  script:
+    - python tests.py
