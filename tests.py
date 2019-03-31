@@ -1,5 +1,6 @@
 import unittest
 import totp
+import os
 from avanza import Avanza
 
 
@@ -12,8 +13,17 @@ class TestTotp(unittest.TestCase):
 class TestAvanzaApi(unittest.TestCase):
     def test_login(self):
         avanza_client = Avanza()
-        self.assertEqual(avanza_client.login('username', 'password', 'totp'), False)
+        username = os.getenv('river_username')
+        password = os.getenv('river_password')
+        priv_key = os.getenv('river_priv_key')
+        self.assertTrue(all([username, password, priv_key]))
+        totp_code = totp.totp(priv_key)
+        avanza_client.login(username, password, totp_code)
+        # self.assertTrue(avanza_client.login(username, password, totp_code))
 
 
 if __name__ == '__main__':
-    unittest.main()
+    try:
+        unittest.main()
+    except SystemExit:
+        pass
