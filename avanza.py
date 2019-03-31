@@ -11,6 +11,8 @@ class Avanza:
         security_token: str = ''          # noqa: F841
 
     def login(self, username: str, password: str, totp_code: str) -> bool:
+        if not all([username, password, totp_code]):
+            return False
         url = 'https://www.avanza.se/_api/authentication/sessions/usercredentials'
         headers = {
             'User-Agent': 'Avanza/se.avanzabank.androidapplikation (3.21.2 (585); Android 6.0)',
