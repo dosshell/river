@@ -1,6 +1,7 @@
 import unittest
 import totp
 import os
+import warnings
 from avanza import Avanza
 
 
@@ -19,6 +20,8 @@ class TestAvanzaApi(unittest.TestCase):
         if (all([username, password, priv_key])):
             totp_code = totp.totp(priv_key)
             avanza_client.login(username, password, totp_code)
+        else:
+            warnings.warn("Complete credentials was not given, ignoring avanza test")
 
 
 if __name__ == '__main__':
