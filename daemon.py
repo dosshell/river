@@ -1,16 +1,18 @@
 import schedule
 import time
+import json
 from smtplib import SMTP
 from email.message import EmailMessage
 from email.headerregistry import Address
 
 
-def mail_report():
+def mail_report(config):
+    gmail_password = config['RiverGmailPassword']
+
     with SMTP("smtp.gmail.com:587") as smtp:
         print(smtp.noop())
         print(smtp.starttls())
-        print(smtp.login('daemon.of.river.tam@gmail.com',
-                         r"""M#qZhyYctO0M%eoo5uN1*O*cQXvFMG1wf6LgxuGzLNliXaj6oGMYoGflUAa%O4^bQN!pp02iHJWAGTLw^6HU4OO8Oack5vs&osW"""))
+        print(smtp.login('daemon.of.river.tam@gmail.com', gmail_password))
         msg = EmailMessage()
         msg['Subject'] = 'River Tam has daily news for you'
         msg['From'] = Address("River Tam", "River Tam",
@@ -23,6 +25,9 @@ def mail_report():
 
 
 def job():
+    with open('/run/secrets/river_settings') as f:
+        config = json.load(f)
+
     # Fetch all raw data
     # Process all indicators
     # Make suggestion
@@ -30,7 +35,7 @@ def job():
     # Make HTML report
     # Mail report
     print("Sending report")
-    mail_report()
+    mail_report(config)
 
 
 def main():
