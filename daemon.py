@@ -1,13 +1,14 @@
 import schedule
 import time
-import json
+import settings
+import argparse
 from smtplib import SMTP
 from email.message import EmailMessage
 from email.headerregistry import Address
 
 
-def mail_report(config):
-    gmail_password = config['RiverGmailPassword']
+def mail_report():
+    gmail_password = settings.config['RiverGmailPassword']
 
     with SMTP("smtp.gmail.com:587") as smtp:
         print(smtp.noop())
@@ -25,9 +26,6 @@ def mail_report(config):
 
 
 def job():
-    with open('/run/secrets/river_settings') as f:
-        config = json.load(f)
-
     # Fetch all raw data
     # Process all indicators
     # Make suggestion
@@ -35,7 +33,7 @@ def job():
     # Make HTML report
     # Mail report
     print("Sending report")
-    mail_report(config)
+    mail_report()
 
 
 def main():
