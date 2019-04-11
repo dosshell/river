@@ -1,13 +1,14 @@
 import schedule
 import time
-import json
+import settings
+import argparse
 from smtplib import SMTP
 from email.message import EmailMessage
 from email.headerregistry import Address
 
 
-def mail_report(config):
-    gmail_password = config['RiverGmailPassword']
+def mail_report():
+    gmail_password = settings.config['RiverGmailPassword']
 
     with SMTP("smtp.gmail.com:587") as smtp:
         print(smtp.noop())
@@ -25,9 +26,6 @@ def mail_report(config):
 
 
 def job():
-    with open('/run/secrets/river_settings') as f:
-        config = json.load(f)
-
     # Fetch all raw data
     # Process all indicators
     # Make suggestion
@@ -35,17 +33,25 @@ def job():
     # Make HTML report
     # Mail report
     print("Sending report")
-    mail_report(config)
+    mail_report()
 
 
-def main():
+def main(args):
     print("Unleashing the daemon of River Tam")
-    schedule.every().day.at("09:00").do(job)
 
-    while True:
-        schedule.run_pending()
-        time.sleep(60)
+    if args.now:
+        job()
+    else:
+        schedule.every().day.at("09:00").do(job)
+        while True:
+            schedule.run_pending()
+            time.sleep(60)
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(
+        description='This is the Daemon of River Tam.')
+    parser.add_argument('--now', action='store_true',
+                        help='Do not wait for the right time, unleash the Daemon now!')
+    args = parser.parse_args()
+    main(args)
