@@ -36,14 +36,22 @@ def job():
     mail_report()
 
 
-def main():
+def main(args):
     print("Unleashing the daemon of River Tam")
-    schedule.every().day.at("09:00").do(job)
 
-    while True:
-        schedule.run_pending()
-        time.sleep(60)
+    if args.now:
+        job()
+    else:
+        schedule.every().day.at("09:00").do(job)
+        while True:
+            schedule.run_pending()
+            time.sleep(60)
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(
+        description='This is the Daemon of River Tam.')
+    parser.add_argument('--now', action='store_true',
+                        help='Do not wait for the right time, unleash the Daemon now!')
+    args = parser.parse_args()
+    main(args)
