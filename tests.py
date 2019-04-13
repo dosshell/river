@@ -2,6 +2,7 @@ import unittest
 import totp
 import warnings
 from settings import config as cfg
+from settings import is_template as is_template_settings
 from avanza import Avanza
 
 
@@ -17,11 +18,11 @@ class TestAvanzaApi(unittest.TestCase):
         username = cfg['AvanzaUsername']
         password = cfg['AvanzaPassword']
         priv_key = cfg['AvanzaPrivateKey']
-        if (all([username, password, priv_key])):
+        if (not is_template_settings):
             totp_code = totp.totp(priv_key)
             avanza_client.login(username, password, totp_code)
         else:
-            warnings.warn("Complete credentials was not given, ignoring avanza test")
+            warnings.warn("Can not test Avanza with template settings.")
 
 
 if __name__ == '__main__':
