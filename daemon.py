@@ -5,6 +5,7 @@ from smtplib import SMTP
 from email.message import EmailMessage
 from email.headerregistry import Address
 from settings import config as cfg
+import db
 
 
 def mail_report() -> None:
@@ -27,6 +28,8 @@ def mail_report() -> None:
 
 def job() -> None:
     # Fetch all raw data
+    db.update()
+
     # Process all indicators
     # Make suggestion
     # Insert suggestion in db
