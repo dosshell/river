@@ -1,14 +1,14 @@
 import schedule
 import time
-import settings
 import argparse
 from smtplib import SMTP
 from email.message import EmailMessage
 from email.headerregistry import Address
+from settings import config as cfg
 
 
-def mail_report():
-    gmail_password = settings.config['RiverGmailPassword']
+def mail_report() -> None:
+    gmail_password = cfg['RiverGmailPassword']
 
     with SMTP("smtp.gmail.com:587") as smtp:
         print(smtp.noop())
@@ -25,7 +25,7 @@ def mail_report():
         print(smtp.send_message(msg))
 
 
-def job():
+def job() -> None:
     # Fetch all raw data
     # Process all indicators
     # Make suggestion
@@ -36,7 +36,7 @@ def job():
     mail_report()
 
 
-def main(args):
+def main(args: argparse.Namespace) -> None:
     print("Unleashing the daemon of River Tam")
 
     if args.now:

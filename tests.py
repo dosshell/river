@@ -1,7 +1,7 @@
 import unittest
 import totp
-import os
 import warnings
+from settings import config as cfg
 from avanza import Avanza
 
 
@@ -14,9 +14,9 @@ class TestTotp(unittest.TestCase):
 class TestAvanzaApi(unittest.TestCase):
     def test_login(self):
         avanza_client = Avanza()
-        username = os.getenv('river_username')
-        password = os.getenv('river_password')
-        priv_key = os.getenv('river_priv_key')
+        username = cfg['AvanzaUsername']
+        password = cfg['AvanzaPassword']
+        priv_key = cfg['AvanzaPrivateKey']
         if (all([username, password, priv_key])):
             totp_code = totp.totp(priv_key)
             avanza_client.login(username, password, totp_code)

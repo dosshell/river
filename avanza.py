@@ -64,3 +64,6 @@ class Avanza:
 
     def get_all_instruments(self) -> None:
         pass
+
+    def get_overview(self) -> None:
+        pass
