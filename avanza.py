@@ -65,5 +65,35 @@ class Avanza:
     def get_all_instruments(self) -> None:
         pass
 
-    def get_overview(self) -> None:
-        pass
+    def get_overview(self) -> dict:
+        if (not self.is_authed):
+            return None
+        url = 'https://www.avanza.se/_mobile/account/overview'
+        headers = {
+            'User-Agent': 'Avanza/se.avanzabank.androidapplikation (3.21.2 (585); Android 6.0)',
+            'Content-Type': 'application/json; charset=UTF-8',
+            'X-SecurityToken': self.security_token,
+            'X-AuthenticationSession': self.authentication_session
+        }
+        response = requests.get(url, headers=headers)
+        if (response.ok):
+            return json.loads(response.content)
+        else:
+            return None
+
+    def get_account_overview(self, account_id: str) -> dict:
+        if (not self.is_authed):
+            return None
+
+        url = f'https://www.avanza.se/_mobile/account/{account_id}/overview'
+        headers = {
+            'User-Agent': 'Avanza/se.avanzabank.androidapplikation (3.21.2 (585); Android 6.0)',
+            'Content-Type': 'application/json; charset=UTF-8',
+            'X-SecurityToken': self.security_token,
+            'X-AuthenticationSession': self.authentication_session
+        }
+        response = requests.get(url, headers=headers)
+        if (response.ok):
+            return json.loads(response.content)
+        else:
+            return None
