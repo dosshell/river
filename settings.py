@@ -1,13 +1,18 @@
 import os
 import json
 
-config = []
+
+file = ''
+is_template = False
+
 if os.path.isfile('settings.json'):
-    with open('settings.json') as f:
-        config = json.load(f)
+    file = 'settings.json'
 elif os.path.isfile('/run/secrets/river_settings'):
-    with open('/run/secrets/river_settings') as f:
-        config = json.load(f)
+    file = '/run/secrets/river_settings'
 else:
-    with open('settings_template.json') as f:
-        config = json.load(f)
+    file = 'settings_template.json'
+    is_template = True
+
+config = []
+with open(file) as f:
+    config = json.load(f)
