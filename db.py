@@ -7,22 +7,37 @@ def update(avanza_client: avanza.Avanza):
         print('No avanza connection')
         return None
 
+    overview = avanza_client.get_overview()
+    accounts = [(x['accountId'], x['accountType'], str(x['depositable'])) for x in overview['accounts']]
+    balance = [(x['accountId'], x['ownCapital']) for x in overview['accounts']]
+
     conn = sqlite3.connect('data.db')
     c = conn.cursor()
 
-    c.execute('''CREATE TABLE IF NOT EXISTS accounts (
-        id NOT NULL PRIMARY KEY,
-        account_type TEXT,
-        depositable)
-        ''')
+    # Create structure
+    c.execute('''CREATE TABLE IF NOT EXISTS
+                 account (
+                   account_id NOT NULL PRIMARY KEY,
+                   account_type,
+                   depositable
+                 )
+          ''')
 
-    overview = avanza_client.get_overview()
+    c.execute('''CREATE TABLE IF NOT EXISTS
+                 balance (
+                   account_id,
+                   total_balance,
+                   datetime,
+                   FOREIGN KEY(account_id) REFERENCES account(account_id)
+                 )
+          ''')
 
-    v = [(x['accountId'], x['accountType'], str(x['depositable'])) for x in overview['accounts']]
-    print(v)
-    c.executemany('''INSERT OR IGNORE INTO accounts VALUES (?, ?, ?)''', v)
+    # Store data
+    c.executemany('''INSERT OR IGNORE INTO account VALUES (?, ?, ?)''', accounts)
+    c.executemany('''INSERT INTO balance VALUES (?, ?, datetime('now'))''', balance)
 
     conn.commit()
+
     conn.close()
 
     return True
