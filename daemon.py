@@ -45,7 +45,7 @@ def main(args: argparse.Namespace) -> None:
     if args.now:
         job()
     else:
-        schedule.every().day.at("09:00").do(job)
+        schedule.every().day.at("03:00").do(job)
         while True:
             schedule.run_pending()
             time.sleep(60)
