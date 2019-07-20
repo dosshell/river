@@ -7,6 +7,12 @@ Two by two, hands of blue.
 - 02:00 Update to latest image
 - 03:00 Run full analyze and email result
 
+## Test
+```
+python -m pip install pipenv
+pipenv install --ignore-pipfile
+pipenv run python daemon.py --now
+```
 
 ## Deploy
 ```
