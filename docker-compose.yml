@@ -4,7 +4,9 @@ services:
   river_daemon:
     image: registry.gitlab.com/dosshell/river
     secrets:
-     - river_settings
+      - river_settings
+    labels:
+      - com.centurylinklabs.watchtower.enable=true
 
 secrets:
   river_settings:
