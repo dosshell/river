@@ -10,16 +10,18 @@ import db
 
 def mail_report() -> None:
     gmail_password = cfg['RiverGmailPassword']
+    gmail_address = cfg['RiverGmailUsername']
+    recipient_name = cfg['UserEmail'].split('@')[0]
+    recipient_domain = cfg['UserEmail'].split('@')[1]
 
     with SMTP("smtp.gmail.com:587") as smtp:
         print(smtp.noop())
         print(smtp.starttls())
-        print(smtp.login('daemon.of.river.tam@gmail.com', gmail_password))
+        print(smtp.login(gmail_address, gmail_password))
         msg = EmailMessage()
         msg['Subject'] = 'River Tam has daily news for you'
-        msg['From'] = Address("River Tam", "River Tam",
-                              "damon.of.river.tam@gmail.com")
-        msg['To'] = (Address("Markus", "markus", "lindeloew.se"))
+        msg['From'] = Address("River Tam", "River Tam", gmail_address)
+        msg['To'] = (Address(recipient_name, recipient_name, recipient_domain))
         msg.set_content("""\
             Two by two, hands of blue.
             """)
