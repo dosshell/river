@@ -4,11 +4,11 @@ import argparse
 from smtplib import SMTP
 from email.message import EmailMessage
 from email.headerregistry import Address
-from settings import config as cfg
+import settings
 # import db
 
 
-def mail_report() -> None:
+def mail_report(cfg: dict) -> None:
     gmail_password = cfg['RiverGmailPassword']
     gmail_address = cfg['RiverGmailUsername']
     recipient_name = cfg['UserEmail'].split('@')[0]
@@ -28,7 +28,7 @@ def mail_report() -> None:
         print(smtp.send_message(msg))
 
 
-def job() -> None:
+def job(cfg: dict) -> None:
     # Fetch all raw data
     # db.update()
 
@@ -38,16 +38,16 @@ def job() -> None:
     # Make HTML report
     # Mail report
     print("Sending report")
-    mail_report()
+    mail_report(cfg)
 
 
 def main(args: argparse.Namespace) -> None:
     print("Unleashing the daemon of River Tam")
-
+    cfg = settings.read_settings(args.config)
     if args.now:
-        job()
+        job(cfg)
     else:
-        schedule.every().day.at("03:00").do(job)
+        schedule.every().day.at("03:00").do(job, cfg)
         while True:
             schedule.run_pending()
             time.sleep(60)
@@ -58,5 +58,8 @@ if __name__ == '__main__':
         description='This is the Daemon of River Tam.')
     parser.add_argument('--now', action='store_true',
                         help='Do not wait for the right time, unleash the Daemon now!')
+    parser.add_argument('-c', '--config', default='settings.json', help='Path to config file')
+
     args = parser.parse_args()
+    print(args)
     main(args)

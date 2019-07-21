@@ -1,24 +1,29 @@
 import unittest
 import warnings
 import totp
+import settings
 from avanza import Avanza
-from settings import is_template as is_template_settings
-from settings import config as cfg
 
 
 class TestAvanzaApi(unittest.TestCase):
+    __is_template = False
+    __cfg = {}
     @classmethod
     def setUpClass(cls):
-        cls.avanza_client = Avanza()
-        if (is_template_settings):
+        cls.__cfg = settings.load_settings('settings.json')
+        if (cls.__cfg['AvanzaUsername'] == 'Your Avanza username'):
+            cls.__is_template = True
+
+        if not cls.__is_template:
+            cls.avanza_client = Avanza()
+        else:
             warnings.warn("Can not test Avanza with template settings.")
 
     def step0_test_login(self):
-        if (not is_template_settings):
-            username = cfg['AvanzaUsername']
-            password = cfg['AvanzaPassword']
-            priv_key = cfg['AvanzaPrivateKey']
-
+        if not self.__is_template:
+            username = self.__cfg['AvanzaUsername']
+            password = self.__cfg['AvanzaPassword']
+            priv_key = self.__cfg['AvanzaPrivateKey']
             totp_code = totp.totp(priv_key)
             self.assertTrue(self.avanza_client.login(
                 username, password, totp_code))
