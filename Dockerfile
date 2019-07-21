@@ -14,4 +14,4 @@ RUN python -m pipenv install --ignore-pipfile
 # Define environment variable
 # ENV NAME World
 
-CMD ["pipenv", "run", "python", "-u", "daemon.py"]
+ENTRYPOINT ["pipenv", "run", "python", "-u", "daemon.py"]
