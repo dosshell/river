@@ -15,6 +15,7 @@ flake8:
 
 unit_tests:
   script:
+    - cd ./src
     - python -m pip install pipenv
     - python -m pipenv install
     - python -m pipenv run python -m unittest

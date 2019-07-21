@@ -3,7 +3,7 @@ FROM python:3.7-alpine
 
 WORKDIR /app
 
-COPY . /app
+COPY ./src /app
 
 RUN python -m pip install pipenv
 RUN python -m pipenv install --ignore-pipfile
