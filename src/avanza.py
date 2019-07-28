@@ -65,6 +65,22 @@ class Avanza:
     def get_all_instruments(self) -> None:
         pass
 
+    def _get_transactions(self, transaction_type: str) -> dict:
+        if (not self.is_authed):
+            return None
+        url = f'''https://www.avanza.se/_mobile/account/transactions/{transaction_type}?from=2000-01-01'''
+        headers = {
+            'User-Agent': 'Avanza/se.avanzabank.androidapplikation (3.21.2 (585); Android 6.0)',
+            'Content-Type': 'application/json; charset=UTF-8',
+            'X-SecurityToken': self.security_token,
+            'X-AuthenticationSession': self.authentication_session
+        }
+        response = requests.get(url, headers=headers)
+        if (response.ok):
+            return json.loads(response.content)
+        else:
+            return None
+
     def _get_overview(self) -> dict:
         if (not self.is_authed):
             return None
@@ -98,12 +114,26 @@ class Avanza:
         else:
             return None
 
+    def get_current_investment(self) -> int:
+        if not self.is_authed:
+            return None
+        overview = self._get_overview()
+        depositables = []
+        for account in overview['accounts']:
+            if account['depositable']:
+                depositables.append(account['accountId'])
+
+        transactions = self._get_transactions('deposit-withdraw')
+        sum = 0
+        for transaction in transactions['transactions']:
+            if transaction['account']['id'] in depositables:
+                sum = sum + transaction['amount']
+        return int(sum)
+
     def get_own_capital(self) -> int:
         if not self.is_authed:
             return None
-
         overview = self._get_overview()
-
         balance = 0
         for account in overview['accounts']:
             if account['depositable']:
