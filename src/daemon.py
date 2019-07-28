@@ -19,10 +19,14 @@ def log(msg: str) -> None:
     print(msg)
 
 
+def pretty_int(number: int) -> str:
+    return '{:,}'.format(number).replace(',',' ')
+
+
 def generate_report(res: Result) -> str:
     report = f"""
     Two by two, hands of blue.
-    {res.own_capital}
+    Own capital: {pretty_int(res.own_capital)}
     """
     return report
 
