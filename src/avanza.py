@@ -65,7 +65,7 @@ class Avanza:
     def get_all_instruments(self) -> None:
         pass
 
-    def get_overview(self) -> dict:
+    def _get_overview(self) -> dict:
         if (not self.is_authed):
             return None
         url = 'https://www.avanza.se/_mobile/account/overview'
@@ -81,8 +81,8 @@ class Avanza:
         else:
             return None
 
-    def get_account_overview(self, account_id: str) -> dict:
-        if (not self.is_authed):
+    def _get_account_overview(self, account_id: str) -> dict:
+        if not self.is_authed:
             return None
 
         url = f'https://www.avanza.se/_mobile/account/{account_id}/overview'
@@ -97,3 +97,15 @@ class Avanza:
             return json.loads(response.content)
         else:
             return None
+
+    def get_own_capital(self) -> int:
+        if not self.is_authed:
+            return None
+
+        overview = self._get_overview()
+
+        balance = 0
+        for account in overview['accounts']:
+            if account['depositable']:
+                balance = balance + account['ownCapital']
+        return int(balance)
