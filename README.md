@@ -22,7 +22,7 @@ pipenv run python daemon.py --now -c ../settings.json
 ```
 
 
-## Build and run container
+## Build and run container now
 ```
 docker build -t registry.gitlab.com/dosshell/river:latest .
 docker run --name river -v $PWD/settings.json:/app/settings.json --restart=unless-stopped -d registry.gitlab.com/dosshell/river:latest
@@ -34,11 +34,11 @@ docker run --rm --name river -v $PWD/settings.json:/app/settings.json --restart=
 ```
 
 
-## Run from registry
+## Run daemon from registry
 ```
 docker login registry.gitlab.com
 docker pull registry.gitlab.com/dosshell/river:latest
-docker run --name river -v $PWD/settings.json:/app/settings.json --restart=unless-stopped -d registry.gitlab.com/dosshell/river:latest
+docker run --name river -v $PWD/settings.json:/app/settings.json --restart=unless-stopped -d registry.gitlab.com/dosshell/river:latest --mail
 ```
 
 
@@ -56,7 +56,7 @@ docker stop river
 docker rm river
 docker pull registry.gitlab.com/dosshell/river:latest
 ```
-And then use the run container code.
+And then use the run daemon container code.
 
 
 ## Inspect image
