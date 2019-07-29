@@ -30,7 +30,7 @@ docker run --name river -v $PWD/settings.json:/app/settings.json --restart=unles
 
 you could also add `--rm` and `--now` to run it once:
 ```
-docker run --rm --name river -v $PWD/settings.json:/app/settings.json --restart=unless-stopped -d registry.gitlab.com/dosshell/river:latest --now
+docker run --rm --name river -v $PWD/settings.json:/app/settings.json registry.gitlab.com/dosshell/river:latest --now
 ```
 
 
