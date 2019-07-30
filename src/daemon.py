@@ -7,16 +7,11 @@ from email.headerregistry import Address
 import settings
 import avanza
 import totp
-
-# import db
+import logger
 
 
 class Result(object):
     pass
-
-
-def log(msg: str) -> None:
-    print(msg)
 
 
 def pretty_int(number: int) -> str:
@@ -56,42 +51,46 @@ def job(cfg: dict) -> None:
     avanza_client = avanza.Avanza()
     totp_code = totp.totp(cfg['AvanzaPrivateKey'])
     if not avanza_client.login(cfg['AvanzaUsername'], cfg['AvanzaPassword'], totp_code):
-        log("Could not sign in")
-        exit(1)
-
-    res = Result()
-    res.own_capital = avanza_client.get_own_capital()
-    res.current_investment = avanza_client.get_current_investment()
-
-    # Update db
-    pass
-
-    # Process all indicators
-    pass
-
-    # Make suggestion
-    pass
-
-    # Insert suggestion in db
-    pass
-
-    # Make report
-    log("Making report")
-    report = generate_report(res)
-
-    # Print report
-    if cfg['mail']:
-        log("Sending report")
-        mail_report(report, cfg['RiverGmailUsername'], cfg['RiverGmailPassword'], cfg['UserEmail'])
+        logger.error("Could not sign in")
     else:
-        log('Printing report')
-        print('------------')
-        print(report)
-        print('------------')
+        res = Result()
+        res.own_capital = avanza_client.get_own_capital()
+        res.current_investment = avanza_client.get_current_investment()
+
+        # Update db
+        pass
+
+        # Process all indicators
+        pass
+
+        # Make suggestion
+        pass
+
+        # Insert suggestion in db
+        pass
+
+        # Make report
+        logger.log("Making report")
+        report = generate_report(res)
+
+        # Print report
+        if cfg['mail']:
+            logger.log("Sending report")
+            mail_report(report, cfg['RiverGmailUsername'], cfg['RiverGmailPassword'], cfg['UserEmail'])
+        else:
+            logger.log('Printing report')
+            print('------------')
+            print(report)
+            print('------------')
+
+    had_error = logger.has_error
+    log = '\n'.join(logger.flush())
+    if had_error and cfg['mail']:
+        mail_report(log, cfg['RiverGmailUsername'], cfg['RiverGmailPassword'], cfg['UserEmail'])
 
 
 def main(args: argparse.Namespace) -> None:
-    print("Unleashing the daemon of River Tam")
+    logger.log("Unleashing the daemon of River Tam")
     cfg = settings.read_settings(args.config)
     cfg['update_db'] = args.update_db
     cfg['mail'] = args.mail
@@ -115,5 +114,5 @@ if __name__ == '__main__':
     parser.add_argument('--mail', action='store_true', help="Send report with email")
 
     args = parser.parse_args()
-    print(args)
+    logger.log("called with" + str(args))
     main(args)
