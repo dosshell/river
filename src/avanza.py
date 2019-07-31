@@ -1,5 +1,6 @@
 import requests
 import json
+import logger
 
 
 class Avanza:
@@ -12,7 +13,9 @@ class Avanza:
 
     def login(self, username: str, password: str, totp_code: str) -> bool:
         if not all([username, password, totp_code]):
+            logger.error("Username, password or totp_code is missing")
             return False
+
         url = 'https://www.avanza.se/_api/authentication/sessions/usercredentials'
         headers = {
             'User-Agent': 'Avanza/se.avanzabank.androidapplikation (3.21.2 (585); Android 6.0)',
@@ -25,10 +28,13 @@ class Avanza:
         }
         response = requests.post(url, data=json.dumps(data), headers=headers)
         if response.status_code == 401:
+            logger.error("Response code from avanza was 401")
             return False
         elif not response.ok:
-            raise ValueError('Some error here', response.status_code)
+            logger.error("Response code from avanza was " + str(response.status_code))
+            return False
         if not response.headers['Content-Type'] == 'application/json;charset=utf-8':
+            logger.error("Content-Type from avanza was not as expected, got " + response.headers['Content-Type'])
             return False
 
         content = json.loads(response.content)
@@ -46,6 +52,7 @@ class Avanza:
         }
         response = requests.post(url, data=json.dumps(data), headers=headers)
         if not response.ok:
+            logger.error("Response code from twoFactorLogin was " + str(response.status_code))
             return False
         content = json.loads(response.content)
 
