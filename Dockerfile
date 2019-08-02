@@ -5,6 +5,7 @@ WORKDIR /app
 
 COPY ./src /app
 
+RUN apk add tzdata
 RUN python -m pip install pipenv
 RUN python -m pipenv install --ignore-pipfile
 
