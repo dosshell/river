@@ -3,12 +3,14 @@ import math
 import hmac
 import time
 import hashlib
+import logger
 
 
 def totp(priv_key: bytes,
          digits: int = 6,
          period: int = 30,
          unixtime: int = int(time.time())) -> int:
+    logger.log("Generating totp code with unixtime: " + str(unixtime))
     raw_key: bytes = base64.b32decode(priv_key)
     tc: int = math.floor(unixtime / period)
     a: int = hotp(raw_key, tc)

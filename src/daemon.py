@@ -79,7 +79,7 @@ def job(cfg: dict) -> bool:
     if not avanza_client.login(cfg['AvanzaUsername'], cfg['AvanzaPassword'], totp_code):
         logger.error("Could not sign in")
         return False
-
+    logger.log("Login succeeded")
     res = Result()
     res.own_capital = avanza_client.get_own_capital()
     res.current_investment = avanza_client.get_current_investment()
@@ -128,8 +128,7 @@ def main(args: argparse.Namespace) -> None:
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-        description="This is the Daemon of River Tam.")
+    parser = argparse.ArgumentParser(description="This is the Daemon of River Tam.")
     parser.add_argument('--now', action='store_true',
                         help="Do not wait for the right time, unleash the Daemon now!")
     parser.add_argument('-c', '--config', default='settings.json', help="Path to config file")
@@ -137,5 +136,5 @@ if __name__ == '__main__':
     parser.add_argument('--mail', action='store_true', help="Send report with email")
 
     args = parser.parse_args()
-    logger.log("called with" + str(args))
+    logger.log("called with " + str(args))
     main(args)
