@@ -28,13 +28,13 @@ class Avanza:
         }
         response = requests.post(url, data=json.dumps(data), headers=headers)
         if response.status_code == 401:
-            logger.error("Response code from avanza was 401")
+            logger.error("Access denied. Response code from avanza was 401")
             return False
         elif not response.ok:
-            logger.error("Response code from avanza was " + str(response.status_code))
+            logger.error("Authentication failed. Response code from avanza was " + str(response.status_code))
             return False
         if not response.headers['Content-Type'] == 'application/json;charset=utf-8':
-            logger.error("Content-Type from avanza was not as expected, got " + response.headers['Content-Type'])
+            logger.error("Authentication error. Content-Type from avanza was not as expected, got " + response.headers['Content-Type'])
             return False
 
         content = json.loads(response.content)
@@ -52,7 +52,7 @@ class Avanza:
         }
         response = requests.post(url, data=json.dumps(data), headers=headers)
         if not response.ok:
-            logger.error("Response code from twoFactorLogin was " + str(response.status_code))
+            logger.error(f"""2FA failed. Used key {totp_code}. Response code was """ + str(response.status_code))
             return False
         content = json.loads(response.content)
 
