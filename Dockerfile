@@ -7,7 +7,7 @@ COPY ./src /app
 
 RUN apk add tzdata
 RUN python -m pip install pipenv
-RUN python -m pipenv install --ignore-pipfile
+RUN python -m pipenv sync
 
 # Make port 80 available to the world outside this container
 # EXPOSE 80
