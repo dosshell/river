@@ -17,7 +17,7 @@ vim settings.json
 ```
 cd src/
 python3 -m pip install pipenv
-python3 -m pipenv install --ignore-pipfile
+python3 -m pipenv sync
 python3 -m pipenv run python daemon.py --now -c ../settings.json
 ```
 
