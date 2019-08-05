@@ -17,5 +17,5 @@ flake8:
 #   script:
 #     - cd ./src
 #     - python -m pip install pipenv
-#     - python -m pipenv install
+#     - python -m pipenv sync
 #     - python -m pipenv run python -m unittest
