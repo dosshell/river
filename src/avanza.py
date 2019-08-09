@@ -127,7 +127,7 @@ class Avanza:
         overview = self._get_overview()
         depositables = []
         for account in overview['accounts']:
-            if account['depositable']:
+            if account['depositable'] and account['tradable']:
                 depositables.append(account['accountId'])
 
         transactions = self._get_transactions('deposit-withdraw')
@@ -135,6 +135,16 @@ class Avanza:
         for transaction in transactions['transactions']:
             if transaction['account']['id'] in depositables:
                 sum = sum + transaction['amount']
+        return int(sum)
+
+    def get_value_in_the_mattress(self) -> int:
+        if not self.is_authed:
+            return None
+        overview = self._get_overview()
+        sum = 0
+        for account in overview['accounts']:
+            if account['depositable'] and not account['tradable']:
+                sum = sum + account['totalBalance']
         return int(sum)
 
     def get_own_capital(self) -> int:

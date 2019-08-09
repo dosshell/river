@@ -9,10 +9,16 @@ import avanza
 import totp
 import logger
 import traceback
+import json
 
 
 class Result(object):
     pass
+
+
+def dump(data: dict, file: str) -> None:
+    with open(file, 'w') as f:
+        json.dump(data, f)
 
 
 def pretty_int(number: int) -> str:
@@ -23,8 +29,9 @@ def generate_report(res: Result) -> str:
     report = f"""
     Two by two, hands of blue.
     Own capital: {pretty_int(res.own_capital)}
-    Investment: {pretty_int(res.current_investment)}
-    Profit: {pretty_int(res.own_capital - res.current_investment)}
+    In the mattress: {pretty_int(res.value_in_the_mattress)}
+    Current investment: {pretty_int(res.current_investment)}
+    Profit: {pretty_int(res.profit)}
     """
     return report
 
@@ -80,9 +87,12 @@ def job(cfg: dict) -> bool:
         logger.error("Could not sign in")
         return False
     logger.log("Login succeeded")
+
     res = Result()
     res.own_capital = avanza_client.get_own_capital()
     res.current_investment = avanza_client.get_current_investment()
+    res.value_in_the_mattress = avanza_client.get_value_in_the_mattress()
+    res.profit = res.own_capital - res.current_investment - res.value_in_the_mattress
 
     # Update db
     pass
