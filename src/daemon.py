@@ -31,6 +31,7 @@ def generate_report_email(res: Result) -> str:
     <html>
         Own capital: {pretty_int(res.own_capital)}</br>
         In the mattress: {pretty_int(res.value_in_the_mattress)}</br>
+        On the table: {pretty_int(res.value_on_the_table)}</br>
         Current investment: {pretty_int(res.current_investment)}</br>
         Profit: {pretty_int(res.profit)}</br>
         <img alt="hej" src="cid:1" />
@@ -86,6 +87,7 @@ def job(cfg: dict) -> bool:
     res.own_capital = avanza_client.get_own_capital()
     res.current_investment = avanza_client.get_current_investment()
     res.value_in_the_mattress = avanza_client.get_value_in_the_mattress()
+    res.value_on_the_table = res.own_capital - res.value_in_the_mattress
     res.profit = res.own_capital - res.current_investment - res.value_in_the_mattress
 
     # Update db
