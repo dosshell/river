@@ -13,6 +13,12 @@ vim settings.json
 ```
 
 
+## Update server
+```
+./scripts/update_server.sh
+```
+
+
 ## Run locally
 ```
 cd src/
