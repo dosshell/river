@@ -1,15 +1,13 @@
 import schedule
 import time
 import argparse
-from smtplib import SMTP
-from email.message import EmailMessage
-from email.headerregistry import Address
 import settings
 import avanza
 import totp
 import logger
 import traceback
 import json
+import mailer
 
 
 class Result(object):
@@ -25,33 +23,29 @@ def pretty_int(number: int) -> str:
     return '{:,}'.format(number).replace(',', ' ')
 
 
-def generate_report(res: Result) -> str:
-    report = f"""
-    Two by two, hands of blue.
-    Own capital: {pretty_int(res.own_capital)}
-    In the mattress: {pretty_int(res.value_in_the_mattress)}
-    Current investment: {pretty_int(res.current_investment)}
-    Profit: {pretty_int(res.profit)}
+def generate_report_email(res: Result) -> str:
+    report = {}
+    report['attachments'] = []
+    report['msg'] = f"""
+    <html>
+        Own capital: {pretty_int(res.own_capital)}</br>
+        In the mattress: {pretty_int(res.value_in_the_mattress)}</br>
+        Current investment: {pretty_int(res.current_investment)}</br>
+        Profit: {pretty_int(res.profit)}</br>
+        <img alt="hej" src="cid:1" />
+        <p>Two by two, hands of blue.</p>
+    </html>
     """
+
+    with open("test.png", 'rb') as img:
+        a = mailer.Attachment
+        a.bin = img.read()
+        a.type = 'image'
+        a.ext = 'jpeg'
+        a.cid = '1'
+        report['attachments'].append(a)
+
     return report
-
-
-def mail_msg(message: str, subject: str, from_user: str, from_password: str, to_email: str) -> None:
-    gmail_address = from_user
-    gmail_password = from_password
-    recipient_name = to_email.split('@')[0]
-    recipient_domain = to_email.split('@')[1]
-
-    with SMTP("smtp.gmail.com:587") as smtp:
-        logger.log(smtp.noop())
-        logger.log(smtp.starttls())
-        logger.log(smtp.login(gmail_address, gmail_password))
-        msg = EmailMessage()
-        msg['Subject'] = subject
-        msg['From'] = Address("River Tam", "River Tam", gmail_address)
-        msg['To'] = (Address(recipient_name, recipient_name, recipient_domain))
-        msg.set_content(message)
-        logger.log(smtp.send_message(msg))
 
 
 def job_wrapper(cfg: dict) -> None:
@@ -75,7 +69,7 @@ def job_wrapper(cfg: dict) -> None:
     if logger.has_error and cfg['mail']:
         logs = logger.flush()
         log = '\n'.join(logs)
-        mail_msg(log, "Bad news everyone!", cfg['RiverGmailUsername'], cfg['RiverGmailPassword'], cfg['UserEmail'])
+        mailer.send_text(log, "Bad news everyone!", cfg['RiverGmailUsername'], cfg['RiverGmailPassword'], cfg['UserEmail'])
     logger.flush()
 
 
@@ -108,16 +102,18 @@ def job(cfg: dict) -> bool:
 
     # Make report
     logger.log("Making report")
-    report = generate_report(res)
+    report = generate_report_email(res)
 
     # Print report
     if cfg['mail']:
         logger.log("Sending report")
-        mail_msg(report, "River Report", cfg['RiverGmailUsername'], cfg['RiverGmailPassword'], cfg['UserEmail'])
+        send_ok = mailer.send_html(report['msg'], None, "River Report", report['attachments'], cfg['RiverGmailUsername'], cfg['RiverGmailPassword'], cfg['UserEmail'])
+        if not send_ok:
+            return False
     else:
         logger.log('Printing report')
         print('------------')
-        print(report)
+        print(report['msg'])
         print('------------')
     return True
 
