@@ -10,4 +10,5 @@ docker run \
 	-e TZ='Europe/Stockholm' \
 	-v $PWD/settings.json:/app/settings.json \
 	registry.gitlab.com/dosshell/river:latest \
-	--now
+	--now \
+	"$@"

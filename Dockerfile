@@ -1,11 +1,12 @@
 # Use an official Python runtime as a parent image
-FROM python:3.7-alpine
+FROM python:3.6-slim-stretch
 
 WORKDIR /app
 
 COPY ./src /app
 
-RUN apk add tzdata
+# RUN apk add tzdata gcc build-base
+# libpng-dev freetype-dev jpeg-dev libstdc++ gcc build-base python3-dev musl-dev freetype libpng
 RUN python -m pip install pipenv
 RUN python -m pipenv sync
 
