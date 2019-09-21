@@ -8,6 +8,7 @@ import logger
 import traceback
 import json
 import mailer
+import plotter
 
 
 class Result(object):
@@ -37,13 +38,12 @@ def generate_report_email(res: Result) -> str:
     </html>
     """
 
-    with open("test.png", 'rb') as img:
-        a = mailer.Attachment
-        a.bin = img.read()
-        a.type = 'image'
-        a.ext = 'jpeg'
-        a.cid = '1'
-        report['attachments'].append(a)
+    a = mailer.Attachment
+    a.bin = plotter.example_plot()
+    a.type = 'image'
+    a.ext = 'png'
+    a.cid = '1'
+    report['attachments'].append(a)
 
     return report
 
