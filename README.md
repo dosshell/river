@@ -13,13 +13,11 @@ vim settings.json
 ```
 
 
-## Update server
-```
-./scripts/update_server.sh
-```
+## Run River
+After you created a config file you can run River locally or in a container. Please note that it exists a `scripts` folder to get you started.
 
 
-## Run locally
+### Run locally
 ```
 cd src/
 python3 -m pip install pipenv
@@ -28,7 +26,7 @@ python3 -m pipenv run python daemon.py --now -c ../settings.json
 ```
 
 
-## Build and run container now
+### Build and run container
 ```
 docker build -t registry.gitlab.com/dosshell/river:latest .
 docker run --name river -v $PWD/settings.json:/app/settings.json --restart=unless-stopped -d registry.gitlab.com/dosshell/river:latest
@@ -40,7 +38,17 @@ docker run --rm --name river -v $PWD/settings.json:/app/settings.json registry.g
 ```
 
 
-## Run daemon from registry
+### Update River
+To update the container of a already running image you can use the following script:
+```
+./scripts/update_server.sh
+```
+
+
+## Advanced usage
+This section will describe detailed commands of different actions.
+
+### Run daemon from registry
 ```
 docker login registry.gitlab.com
 docker pull registry.gitlab.com/dosshell/river:latest
@@ -48,7 +56,7 @@ docker run --name river -v $PWD/settings.json:/app/settings.json --restart=unles
 ```
 
 
-## Push new image
+### Push new image
 ```
 docker login registry.gitlab.com
 docker build -t registry.gitlab.com/dosshell/river:latest .
@@ -56,7 +64,7 @@ docker push registry.gitlab.com/dosshell/river:latest
 ```
 
 
-## Update server
+### Update server manually
 ```
 docker stop river
 docker rm river
@@ -65,7 +73,7 @@ docker pull registry.gitlab.com/dosshell/river:latest
 And then use the run daemon container code.
 
 
-## Inspect image
+### Inspect image
 ```
 docker save --output test.tar <imageid>
 ```
