@@ -1,5 +1,461 @@
 <meta charset="utf-8">
 
+List of API commands from se.avanza.android.api.retrofit:
+```
+@e("/_mobile/account/overview")
+Single<AggregatedAccountOverview> accountOverview();
+
+@e("/_mobile/account/dealsandorders")
+Single<DealsAndOrders> dealsAndOrders();
+
+@e("/_mobile/account/list?onlyDepositable=true")
+Single<ArrayList<DepositAccount>> depositableAccounts();
+
+@e("/_mobile/account/list?onlyTrustlyDepositable=true")
+Single<ArrayList<DepositAccount>> depositableTrustlyAccounts();
+
+@e("/_mobile/transfer/external-accounts")
+Single<ArrayList<ExternalAccount>> externalAccounts();
+
+@e("/_cqbe/ff/overview/categories")
+Single<OverviewCategory> getAccountCategories();
+
+@e("/_mobile/account/{accountId}/overview")
+Single<AccountTypeIdentifier> getAccountOverview(@q("accountId") AccountId accountId);
+
+@e("/_mobile/account/{accountId}/positions")
+Single<AccountPositions> getAccountPositions(@q("accountId") AccountId accountId, @r("autoPortfolio") boolean z);
+
+@e("/_mobile/account/positions")
+Single<AccountPositions> getAccountPositions(@r("aggregate") boolean z, @r("autoPortfolio") boolean z2);
+
+@e("/_mobile/account/list")
+Single<List<OrderAccount>> getAccountsWithPosition(@r("orderbookId") OrderbookId orderbookId);
+
+@e("/_mobile/account/list?onlyForAuto=true")
+Single<List<MonthlySavingsAccount>> getAutoAccounts();
+
+@e("/_mobile/account/contractnote/{accountId}/{noteId}.pdf")
+Single<e0> getContractNote(@q("accountId") AccountId accountId, @q("noteId") String str);
+
+@e("/_mobile/account/dealsandorders/{accountId}")
+Single<DealsAndOrders> getDealsAndOrders(@q("accountId") AccountId accountId);
+
+@e("/_mobile/account/list?onlyForMonthlySavings=true")
+Single<List<MonthlySavingsAccount>> getMonthlySavingsAccounts();
+
+@e("/_mobile/account/list")
+Single<List<OrderAccount>> getTradableAccounts(@r("onlyTradable") boolean z);
+
+@e("/_mobile/account/transactions/{transactionType}")
+Single<TransactionsResponse> getTransactions(@q("transactionType") TransactionFilterType transactionFilterType, @r("from") LocalDate localDate, @r("to") LocalDate localDate2, @r("isinAndCurrency") CommaSeparatedPath<IsinAndCurrency> commaSeparatedPath, @r("orderbookId") CommaSeparatedPath<OrderbookId> commaSeparatedPath2);
+
+@e("/_mobile/account/transactions/{accountId}/{transactionType}")
+Single<TransactionsResponse> getTransactions(@q("accountId") AccountId accountId, @q("transactionType") TransactionFilterType transactionFilterType, @r("from") LocalDate localDate, @r("to") LocalDate localDate2, @r("isinAndCurrency") CommaSeparatedPath<IsinAndCurrency> commaSeparatedPath, @r("orderbookId") CommaSeparatedPath<OrderbookId> commaSeparatedPath2);
+
+@e("/_mobile/account/transactions/options")
+Single<TransactionFilterValues> getTransactionsFilterValues(@r("from") LocalDate localDate, @r("to") LocalDate localDate2, @r("includeInstrumentsWithNoOrderbook") boolean z);
+
+@n("/_api/usercontent/account/{accountId}")
+Completable renameAccount(@q("accountId") AccountId accountId, @r("name") String str);
+
+@m("/_cqbe/ff/account/{accountId}/category-id")
+Completable setAccountCategory(@q("accountId") AccountId accountId, @a CategoryId categoryId);
+
+@m("/_cqbe/ff/account/settings/{accountId}/DISPLAY_BUYING_POWER_WITH_CREDIT")
+Completable setDisplayBuyingPowerWithCredit(@q("accountId") AccountId accountId, @a DisplayBuyingPowerWithCredit displayBuyingPowerWithCredit);
+
+@e("/_mobile/account/transactions")
+Single<TransactionsResponse> transactions();
+
+@e("/_mobile/account/eventcount")
+Single<EventCount> transactionsEventCount();
+
+@e("_mobile/account/{accountId}/eventcount")
+Single<EventCount> transactionsEventCount(@q("accountId") AccountId accountId);
+
+@m("/_api/authentication/enabledevicetoken/activate-devicetoken")
+Single<UserSession> activateDeviceToken(@a ActivateDeviceTokenRequest activateDeviceTokenRequest, @h("VND.se.avanza.security-TwoFactor-Activation-Transaction-Id") String str);
+
+@m("/_api/authentication/sessions/bankid")
+Single<BankIdTransaction> authenticate();
+
+@m("/_api/authentication/sessions/usercredentials")
+Single<TwoFactorAuthenticationResponse> authenticate(@a UserLogin userLogin);
+
+@m("/_api/authentication/sessions/bankid")
+Single<BankIdTransaction> authenticate(@a IdentificationNumber identificationNumber);
+
+@e("{authURL}")
+Single<BankIdAuthentication> authenticateAccount(@q(encoded = true, value = "authURL") String str, @r("maxInactiveMinutes") int i2);
+
+@e("/_api/authentication/sessions/bankid/{transactionId}")
+Single<BankIdCollectionState> collect(@q("transactionId") String str);
+
+@m("/_api/authentication/enabledevicetoken")
+Single<EnableDeviceTokenResponse> enableDeviceToken(@a EnableDeviceTokenRequest enableDeviceTokenRequest);
+
+@m("/_api/authentication/sessions/devicetoken")
+Single<UserSession> loginDeviceToken(@a LoginDeviceTokenRequest loginDeviceTokenRequest);
+
+@b("/_api/authentication/sessions/{sessionId}")
+Completable logout(@q("sessionId") String str);
+
+@m("/_api/authentication/usercredentials/request-new-password")
+Completable recoverPassword(@a RecoverPasswordRequest recoverPasswordRequest);
+
+@m("/_api/authentication/usercredentials/recover-username")
+Completable recoverUsername(@a RecoverUsernameRequest recoverUsernameRequest);
+
+@m("/_api/authentication/enabledevicetoken/send-activationcode")
+Single<SendActivationCodeResponse> sendActivationCode(@h("VND.se.avanza.security-TwoFactor-Activation-Transaction-Id") String str);
+
+@m("/_api/authentication/enabledevicetoken/verify-activationcode")
+Single<VerifyActivationCodeResponse> verifyActivationCode(@a VerifyActivationCodeRequest verifyActivationCodeRequest, @h("VND.se.avanza.security-TwoFactor-Activation-Transaction-Id") String str);
+
+@m("/_api/authentication/sessions/totp")
+Single<TotpAuthentication> verifyTotp(@a TotpVerify totpVerify, @h("VND.se.avanza.security-Totp-Transaction-Id") TwofactorTransactionId twofactorTransactionId);
+
+@e("/_mobile/chart/account/{accountId}")
+Single<AccountChartResult> getAccountChart(@q("accountId") AccountId accountId, @r("timePeriod") ChartTimePeriod chartTimePeriod, @r("resolution") ChartTimeResolution chartTimeResolution);
+
+@e("/_mobile/chart/{orderbookType}/{orderbookId}")
+Single<OrderbookChartResult> getChart(@q("orderbookId") OrderbookId orderbookId, @q("orderbookType") String str, @r("timePeriod") ChartTimePeriod chartTimePeriod, @r("resolution") ChartTimeResolution chartTimeResolution);
+
+@e("/_mobile/chart/{orderbookType}/{orderbookId}")
+@j({"AZA-Do-Not-Touch-Session: true"})
+Single<OrderbookChartResult> getChartWithoutRenewSession(@q("orderbookId") OrderbookId orderbookId, @q("orderbookType") String str, @r("timePeriod") ChartTimePeriod chartTimePeriod, @r("resolution") ChartTimeResolution chartTimeResolution);
+
+@e("/_mobile/customer/check-suitability")
+Maybe<Suitability> checkSuitability(@r("orderbookId") OrderbookId orderbookId);
+
+@e("/_mobile/customer/registration/classify")
+Single<CustomerRegistration> customerRegistration();
+
+@e("/_mobile/customer/sign-eleg")
+Single<SignElegResponse> customerSigningDocument();
+
+@e("/_mobile/customer/registration/classify")
+Single<CustomerRegistration> getCustomerRegistration(@r("identificationNumber") IdentificationNumber identificationNumber);
+
+@e("/_mobile/customer/registration/are-all-accounts-active")
+Single<Boolean> registrationAccountsActiveStatus();
+
+@n("/_mobile/customer/prompts/swedish-citizenship-and-fiscal-residence/")
+Completable updateCustomerPrompt();
+
+@e("/_mobile/external-mortgage/list")
+Single<ExternalMortgageList> externalMortgages();
+
+@e("/_mobile/external-mortgage/{id}/overview")
+Single<ExternalMortgage> getExternalMortgage(@q("id") ExternalMortgageApplicationId externalMortgageApplicationId);
+
+@e("/_mobile/forum/post/company/{companyId}")
+Single<List<ForumPost>> getCompanyForumPosts(@q("companyId") String str, @r("start") int i2, @r("limit") int i3);
+
+@e("/_mobile/market/bond/{orderbookId}")
+Single<Bond> getBond(@q("orderbookId") OrderbookId orderbookId);
+
+@e("/_mobile/market/certificate/{orderbookId}")
+Single<Certificate> getCertificate(@q("orderbookId") OrderbookId orderbookId);
+
+@e("/_mobile/market/orderbooklist/{orderbookIds}?group=none&sort=none")
+Single<List<AbstractMarketOrderbook>> getCustomSortedOrderbooks(@q("orderbookIds") CommaSeparatedPath<OrderbookId> commaSeparatedPath);
+
+@e("/_mobile/market/equity_linked_bond/{orderbookId}")
+Single<Bond> getEquityLinkedBond(@q("orderbookId") OrderbookId orderbookId);
+
+@e("/_mobile/market/exchange_traded_fund/{orderbookId}")
+Single<ExchangeTradedFund> getExchangeTradedFund(@q("orderbookId") OrderbookId orderbookId);
+
+@e("/_mobile/market/fund/{orderbookId}")
+Single<Fund> getFund(@q("orderbookId") OrderbookId orderbookId);
+
+@e("/_mobile/market/future_forward/{orderbookId}")
+Single<FutureForward> getFutureForward(@q("orderbookId") OrderbookId orderbookId);
+
+@e("/_mobile/market/index/{orderbookId}")
+Single<Index> getIndex(@q("orderbookId") OrderbookId orderbookId);
+
+@e("/_mobile/market/option/{orderbookId}")
+Single<Option> getOption(@q("orderbookId") OrderbookId orderbookId);
+
+@e("/_mobile/market/orderbooklist/{orderbookIds}?group=type")
+Single<List<MarketOrderbookGroup>> getSortedOrderbooks(@q("orderbookIds") CommaSeparatedPath<OrderbookId> commaSeparatedPath, @r("sort") OrderbookSortOrder orderbookSortOrder);
+
+@e("/_mobile/market/orderbooklist/{orderbookIds}?group=type")
+@j({"AZA-Do-Not-Touch-Session: true"})
+Single<List<MarketOrderbookGroup>> getSortedOrderbooksNoTouchSession(@q("orderbookIds") CommaSeparatedPath<OrderbookId> commaSeparatedPath, @r("sort") OrderbookSortOrder orderbookSortOrder);
+
+@e("/_mobile/market/stock/{orderbookId}")
+Single<Stock> getStock(@q("orderbookId") OrderbookId orderbookId);
+
+@e("/_mobile/market/warrant/{orderbookId}")
+Single<Warrant> getWarrant(@q("orderbookId") OrderbookId orderbookId);
+
+@e("/_mobile/market/overview")
+Single<List<MarketOverviewGroup>> marketIndices();
+
+@e("/_mobile/market/search")
+Single<SearchResult> search(@r("query") String str, @r("limit") int i2, @r("onlyBuyable") boolean z);
+
+@e("/_mobile/market/search/{instrumentType}")
+Single<SearchResult> search(@q("instrumentType") InstrumentType instrumentType, @r("query") String str, @r("limit") int i2, @r("onlyBuyable") boolean z);
+
+@e("/_mobile/market/selectableindex")
+Single<List<SelectableIndex>> selectableIndices();
+
+@e("/_mobile/marketing/autoportfolio")
+Single<List<AutoPortfolio>> autoPortfolios();
+
+@e("/_mobile/marketing/autoportfolio/{orderbookId}")
+Single<AutoPortfolio> getAutoPortfolio(@q("orderbookId") OrderbookId orderbookId);
+
+@e("/_mobile/chart/autoportfolio/{orderbookId}/prognosis")
+Single<AutoPortfolioPrognosis> getAutoPrognosis(@q("orderbookId") OrderbookId orderbookId, @r("initialInvestment") BigDecimal bigDecimal, @r("monthlyInvestment") BigDecimal bigDecimal2);
+
+@e("/_mobile/content/document-list/{documentListId}")
+Single<DocumentList> getDocumentList(@q("documentListId") String str);
+
+@e("/_mobile/marketing/inspirationlist/{inspirationListId}")
+Single<InspirationList<InspirationListOrderbook>> getInspirationList(@q("inspirationListId") InspirationListId inspirationListId);
+
+@e("/_mobile/marketing/inspirationlist")
+Single<List<InspirationList<InspirationListOrderbook>>> inspirationLists();
+
+@e("/_mobile/customer/attachment-constraints")
+Single<AttachmentConstraints> attachmentConstraints();
+
+@e("/_mobile/customer/message/category")
+Single<List<MessageCategory>> categories();
+
+@b("/_mobile/customer/message/conversation/{messageId}")
+Completable deleteConversation(@q("messageId") MessageId messageId);
+
+@e("/_mobile/customer/message-attached-file/{messageId}/{documentId}")
+Observable<e0> getAttachment(@q("messageId") MessageId messageId, @q("documentId") String str);
+
+@e("/_mobile/customer/message/conversation/{messageId}")
+@j({"AZA-Accept-Formatting: text/markdown"})
+Single<List<Message>> getConversation(@q("messageId") MessageId messageId);
+
+@e("/_mobile/customer/message/conversations")
+Single<List<Message>> getConversations(@r("conversationIndex") int i2, @r("listSize") int i3, @r("previewSize") int i4);
+
+@m("/_mobile/customer/message/{messageBox}/{messageId}/read")
+Completable markMessageAsRead(@q("messageBox") String str, @q("messageId") MessageId messageId);
+
+@m("/_mobile/customer/message/{messageId}/reply")
+Single<MessageId> replyMessage(@q("messageId") MessageId messageId, @a MessageText messageText);
+
+@m("/_mobile/customer/message")
+Completable sendMessage(@a MessageSendRequest messageSendRequest);
+
+@e("/_mobile/customer/message/unreadcount/Inbox")
+Single<UnreadCount> unreadMessageCount();
+
+@m("/_api/transfer/monthly-savings/{accountId}")
+Single<MonthlySavingsResponse> createMonthlySavings(@q("accountId") AccountId accountId, @a MonthlySavingsRequest monthlySavingsRequest);
+
+@e("/_mobile/transfer/monthly-savings/{accountId}")
+Single<MonthlySavingsSummary> getMonthlySavings(@q("accountId") AccountId accountId);
+
+@e("/_mobile/transfer/monthly-savings")
+Single<MonthlySavingsSummary> monthlySavings();
+
+@e("/_mobile/transfer/monthly-savings-defaults")
+Single<MonthlySavingsDefaults> monthlySavingsDefaults();
+
+@n("/_api/transfer/monthly-savings/{accountId}/{monthlySavingsId}/pause")
+Completable pauseMonthlySavings(@q("accountId") AccountId accountId, @q("monthlySavingsId") MonthlySavingsId monthlySavingsId);
+
+@b("/_api/transfer/monthly-savings/{accountId}/{monthlySavingsId}")
+Completable removeMonthlySavings(@q("accountId") AccountId accountId, @q("monthlySavingsId") MonthlySavingsId monthlySavingsId);
+
+@n("/_api/transfer/monthly-savings/{accountId}/{monthlySavingsId}/resume")
+Completable resumeMonthlySavings(@q("accountId") AccountId accountId, @q("monthlySavingsId") MonthlySavingsId monthlySavingsId);
+
+@e("/_mobile/news/account")
+Single<List<HeadlineSection>> getAccountHeadline();
+
+@e("/_mobile/news/account/{accountId}")
+Single<List<HeadlineSection>> getAccountHeadlines(@q("accountId") AccountId accountId);
+
+@e("/_mobile/news/article/{articlePath}")
+Observable<Article> getArticle(@q(encoded = true, value = "articlePath") String str);
+
+@e("/_mobile/news/headlines/{orderbookId}")
+Single<List<HeadlineSection>> getHeadlines(@q("orderbookId") OrderbookId orderbookId, @r("limit") int i2);
+
+@e("/_mobile/news/headlines/{orderbookIds}")
+Single<List<HeadlineSection>> getHeadlines(@q("orderbookIds") CommaSeparatedPath<OrderbookId> commaSeparatedPath);
+
+@e("/_mobile/news/newsbill")
+Single<List<Headline>> getNewsBill(@r("limit") int i2);
+
+@e("/_mobile/news/telegrams")
+Single<List<HeadlineSection>> getTelegrams(@r("limit") int i2);
+
+@e("/_mobile/news/telegrams")
+Single<List<HeadlineSection>> getTelegramsBefore(@r("timestamp") DateTime dateTime);
+
+@b("/_mobile/notification/unregister")
+Completable deleteDeviceToken(@r("googleDeviceToken") String str);
+
+@b("/_api/notification/pricealert/{alertId}")
+Completable deletePriceAlert(@q("alertId") String str);
+
+@e("/_mobile/notification/pricealerts/{orderbookId}")
+Single<List<PriceAlert>> getOrderbookPriceAlerts(@q("orderbookId") OrderbookId orderbookId);
+
+@e("/_mobile/notification/pricealert")
+Single<OrderbookPriceAlertEntry> loadOrderbookPriceAlert(@r("alertId") String str);
+
+@e("/_mobile/notification/pricealert")
+Single<OrderbookPriceAlertEntry> loadOrderbookPriceAlert(@r("orderbookId") OrderbookId orderbookId);
+
+@e("/_api/usercontent/notification-settings")
+Single<NotificationSetting> notificationSettings();
+
+@e("/_mobile/notification/pricealerts")
+Single<PriceAlertResponse> priceAlerts();
+
+@m("/_api/usercontent/notification-settings")
+Completable putNotificationSettings(@a NotificationSetting notificationSetting);
+
+@n("/_mobile/notification/settings")
+Completable putSettings(@a PushSettingsRequest pushSettingsRequest);
+
+@m("/_mobile/notification/register")
+@j({"AZA-Do-Not-Touch-Session: true"})
+Completable registerToken(@a DeviceToken deviceToken);
+
+@n("/_api/notification/pricealert")
+Completable saveOrderbookPriceAlert(@a OrderbookPriceAlertRequest orderbookPriceAlertRequest);
+
+@e("/_mobile/notification/settings")
+Single<PushSettingsResponse> settings();
+
+@b("/_api/order")
+Single<OrderEntryRequestResponse> deleteOrder(@r("accountId") AccountId accountId, @r("orderId") OrderId orderId);
+
+@e("/_mobile/order/preliminary-investment-fees")
+Single<InvestmentFees> getInvestmentFees(@r("accountId") AccountId accountId, @r("orderbookId") OrderbookId orderbookId, @r("price") BigDecimal bigDecimal, @r("volume") Volume volume, @r("yearsToHold") Integer num);
+
+@e("/_mobile/order/preliminary-transaction-fees")
+Single<TransactionFees> getTransactionFees(@r("accountId") AccountId accountId, @r("orderbookId") OrderbookId orderbookId, @r("orderId") OrderId orderId, @r("price") BigDecimal bigDecimal, @r("volume") Volume volume, @r("orderType") OrderType orderType);
+
+@e("/_mobile/order/fund")
+Single<FundOrderEntry> loadFundOrderInformation(@r("accountId") AccountId accountId, @r("orderbookId") OrderbookId orderbookId);
+
+@e("/_mobile/order")
+Single<OrderEntry> loadOrderInformation(@r("accountId") AccountId accountId, @r("orderbookId") OrderbookId orderbookId);
+
+@e("/_api/order")
+Single<OrderEntryRequestResponse> orderStatus(@r("accountId") AccountId accountId, @r("requestId") String str);
+
+@n("/_api/usercontent/settings/orderaccount/{accountId}")
+Completable saveOrderAccount(@q("accountId") AccountId accountId, @a String str);
+
+@m("/_api/usercontent/settings/showcourtageclassinfoonorderpage/{showCourtageDialog}")
+Completable saveShowCourtageInfoDialog(@q("showCourtageDialog") boolean z, @a String str);
+
+@m("/_api/order")
+Single<OrderEntryRequestResponse> sendOrder(@a OrderEntryRequest orderEntryRequest);
+
+@n("/_api/order/{instrumentType}/{orderId}")
+Single<OrderEntryRequestResponse> updateOrder(@q("instrumentType") InstrumentType instrumentType, @q("orderId") OrderId orderId, @a UpdateOrderEntryRequest updateOrderEntryRequest);
+
+@m("/_api/pension/tjp-fund-distribution/{accountId}")
+Completable createTjpFundDistribution(@q("accountId") AccountId accountId, @a TjpFundDistributionRequest tjpFundDistributionRequest);
+
+@e("/_mobile/pension/tjp-fund-distribution/{accountId}")
+Single<TjpFundDistribution> getTjpFundDistribution(@q("accountId") AccountId accountId);
+
+@e("/_mobile/system/check-version/android")
+@j({"AZA-Do-Not-Touch-Session: true"})
+Maybe<MobileAppVersion> checkVersion(@r("currentVersion") String str, @r("currentOSVersion") AndroidOsVersion androidOsVersion);
+
+@e("/systemmeddelanden/mobil/global")
+@j({"AZA-Do-Not-Touch-Session: true", "Content-Type: text/plain"})
+Single<String> fallbackSystemMessage();
+
+@e("/_mobile/system/features/android")
+@j({"AZA-Do-Not-Touch-Session: true"})
+Single<List<String>> featureToggles();
+
+@e("/_mobile/system/customer-service/opening-hours")
+Single<List<OpeningHours>> openingHours();
+
+@e("/_mobile/system/messages")
+@j({"AZA-Do-Not-Touch-Session: true"})
+Single<List<SystemMessage>> systemMessages();
+
+@e("/_mobile/system/urlmappings")
+@j({"AZA-Do-Not-Touch-Session: true"})
+Single<List<RoutingUrlItem>> urlLinkTable();
+
+@e("/_mobile/transfer/availability")
+Single<TransferAvailability> availability();
+
+@m("/_api/transfer/internal/create")
+Single<TransferCreationResponse> createTransfer(@a TransferCreationRequest transferCreationRequest);
+
+@m("/_api/transfer/trustly/")
+Single<InitializeTrustlyDepositResponse> createTrustlyDeposit(@a TrustlyDepositRequest trustlyDepositRequest);
+
+@e("/_mobile/transfer/external-accounts")
+Single<List<ExternalAccount>> externalAccounts();
+
+@e("/_mobile/transfer/internal/from-accounts/{toAccountId}")
+Single<List<TransferAccount>> getInternalTransferFromAccounts(@q("toAccountId") AccountId accountId);
+
+@e("/_mobile/transfer/transfers/list/{accountId}")
+Single<TransferList> getTransferList(@q("accountId") AccountId accountId);
+
+@m("/_api/transfer/internal/status")
+Single<InternalTransferStatus> getTransferStatus(@r("transferId") String str, @r("fromAccountId") AccountId accountId);
+
+@e("/_mobile/transfer/trustly/{transactionId}")
+Single<TrustlyDepositStatus> getTrustlyDepositStatus(@q("transactionId") TrustlyTransactionId trustlyTransactionId);
+
+@e("/_api/transfer/trustly/{transactionId}")
+Single<TrustlyRequestStatus> getTrustlyRequestStatus(@q("transactionId") TrustlyTransactionId trustlyTransactionId);
+
+@e("/_mobile/transfer/withdrawability/from/{accountId}")
+Single<List<ExternalAccount>> getWithdrawExternalAccounts(@q("accountId") AccountId accountId);
+
+@e("/_mobile/transfer/withdrawability/from/quarantine")
+Single<WithdrawQuarantine> getWithdrawalQuarantine();
+
+@m("/_mobile/transfer/withdrawal")
+Single<WithdrawResult> sendWithdrawalRequest(@a WithdrawalRequest withdrawalRequest);
+
+@m("/_mobile/transfer/withdrawal/sms/send")
+Completable sendWithdrawalSmsCode(@a WithdrawSmsBody withdrawSmsBody);
+
+@e("/_mobile/transfer/validate-external-account/{accountnumber}")
+Single<ExternalAccount> validateExternalAccount(@q("accountnumber") String str);
+
+@m("/_mobile/transfer/internal/validate")
+Single<InternalTransferValidationResult> validateInternalTransfer(@a InternalTransferValidationRequest internalTransferValidationRequest);
+
+@e("/_mobile/transfer/withdrawability/from/list")
+Single<WithdrawProfile> withdrawableAccounts();
+
+@m("/_api/usercontent/watchlist")
+Single<String> add(@a WatchList watchList);
+
+@b("/_api/usercontent/watchlist/{watchListId}")
+Completable remove(@q("watchListId") String str);
+
+@n("/_api/usercontent/watchlist/{watchListId}")
+Completable update(@q("watchListId") String str, @a WatchList watchList);
+
+@e("/_mobile/usercontent/watchlist")
+Single<List<WatchList>> watchlists(@i Map<String, String> map);
+```
+
 ```cmd
 socat openssl:www.avanza.se:443,verify=0,crnl -
 ```
