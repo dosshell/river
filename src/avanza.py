@@ -1,6 +1,7 @@
 import requests
 import json
 import logger
+import datetime
 
 
 class Avanza:
@@ -73,11 +74,11 @@ class Avanza:
         pass
 
     def _get_transactions(self, transaction_type: str) -> dict:
-        if (not self.is_authed):
+        if not self.is_authed:
             return None
         url = f'''https://www.avanza.se/_mobile/account/transactions/{transaction_type}?from=2000-01-01'''
         headers = {
-            'User-Agent': 'Avanza/se.avanzabank.androidapplikation (3.21.2 (585); Android 6.0)',
+            'User-Agent': 'Avanza API client/1.3.0',
             'Content-Type': 'application/json; charset=UTF-8',
             'X-SecurityToken': self.security_token,
             'X-AuthenticationSession': self.authentication_session
@@ -88,18 +89,44 @@ class Avanza:
         else:
             return None
 
-    def _get_overview(self) -> dict:
-        if (not self.is_authed):
+    def get_account_chart(self):
+        if not self.is_authed:
             return None
-        url = 'https://www.avanza.se/_mobile/account/overview'
+
+        overview = self._get_overview()
+        good_accounts = [x['accountId'] for x in overview['accounts'] if x['accountType'] == 'Investeringssparkonto']
+        if len(good_accounts) < 1:
+            return None
+        account_id = good_accounts[0]
+
+        url = f'''https://www.avanza.se/_mobile/chart/account/{account_id}?timePeriod=one_year'''
         headers = {
-            'User-Agent': 'Avanza/se.avanzabank.androidapplikation (3.21.2 (585); Android 6.0)',
+            'User-Agent': 'Avanza API client/1.3.0',
             'Content-Type': 'application/json; charset=UTF-8',
             'X-SecurityToken': self.security_token,
             'X-AuthenticationSession': self.authentication_session
         }
         response = requests.get(url, headers=headers)
-        if (response.ok):
+        if not response.ok:
+            return None
+
+        data = json.loads(response.content)
+        dates = [datetime.datetime.strptime(x['date'], '%Y-%m-%d') for x in data['dataSeries']]
+        values = [x['value'] for x in data['dataSeries']]
+        return (dates, values)
+
+    def _get_overview(self) -> dict:
+        if (not self.is_authed):
+            return None
+        url = 'https://www.avanza.se/_mobile/account/overview'
+        headers = {
+            'User-Agent': 'Avanza API client/1.3.0',
+            'Content-Type': 'application/json; charset=UTF-8',
+            'X-SecurityToken': self.security_token,
+            'X-AuthenticationSession': self.authentication_session
+        }
+        response = requests.get(url, headers=headers)
+        if response.ok:
             return json.loads(response.content)
         else:
             return None
@@ -110,7 +137,7 @@ class Avanza:
 
         url = f'https://www.avanza.se/_mobile/account/{account_id}/overview'
         headers = {
-            'User-Agent': 'Avanza/se.avanzabank.androidapplikation (3.21.2 (585); Android 6.0)',
+            'User-Agent': 'Avanza API client/1.3.0',
             'Content-Type': 'application/json; charset=UTF-8',
             'X-SecurityToken': self.security_token,
             'X-AuthenticationSession': self.authentication_session

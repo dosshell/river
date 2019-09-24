@@ -1,19 +1,14 @@
 import io
 import matplotlib.pyplot as plt
-import numpy as np
 
 
-def example_plot():
+def example_plot(x, y):
     buf = io.BytesIO()
 
-    # Data for plotting
-    t = np.arange(0.0, 2.0, 0.01)
-    s = 1 + np.sin(2 * np.pi * t)
-
     fig, ax = plt.subplots()
-    ax.plot(t, s)
+    ax.plot(x, y)
 
-    ax.set(xlabel='time (s)', ylabel='voltage (mV)', title='About as simple as it gets, folks')
+    ax.set(xlabel='Time', ylabel='Percentage [%]', title='About as simple as it gets, folks')
     ax.grid()
 
     fig.savefig(buf, format='png')
