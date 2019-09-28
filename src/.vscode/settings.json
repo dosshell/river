@@ -12,4 +12,5 @@
     "python.testing.unittestEnabled": true,
     "python.formatting.provider": "yapf",
     "python.formatting.yapfArgs": ["--style={ based_on_style: pep8, column_limit: 120 }"],
+    "python.linting.flake8Args": ["--config=.flake8"]
 }
