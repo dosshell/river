@@ -127,10 +127,9 @@ def job(cfg: dict) -> bool:
 def main(args: argparse.Namespace) -> None:
     logger.log("Unleashing the daemon of River Tam")
     cfg = settings.read_settings(args.config)
-    cfg['update_db'] = args.update_db
     cfg['mail'] = args.mail
 
-    if args.now:
+    if not args.daemon:
         job_wrapper(cfg)
     else:
         schedule.every().day.at("03:00").do(job_wrapper, cfg)
@@ -140,10 +139,11 @@ def main(args: argparse.Namespace) -> None:
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="This is the Daemon of River Tam.")
-    parser.add_argument('--now', action='store_true', help="Do not wait for the right time, unleash the Daemon now!")
+    parser = argparse.ArgumentParser(
+        description="River Tam. You’ve got tools, something sharp. Don’t be scared. I’m right here.")
+    parser.add_argument('-d', '--daemon', action='store_true', help="Unleash the Daemon")
     parser.add_argument('-c', '--config', default='settings.json', help="Path to config file")
-    parser.add_argument('-update-db', default=False, help="Update database")
+    parser.add_argument('--test', default=False, action='store_true', help="Use test data")
     parser.add_argument('--mail', action='store_true', help="Send report with email")
 
     args = parser.parse_args()
