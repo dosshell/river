@@ -13,4 +13,5 @@ docker run \
 	--restart=unless-stopped \
 	-d \
 	registry.gitlab.com/dosshell/river:latest \
-	--mail
+	--mail \
+	--daemon

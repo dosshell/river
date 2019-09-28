@@ -8,4 +8,4 @@ COPY ./src /app
 RUN python -m pip install pipenv
 RUN python -m pipenv sync
 
-ENTRYPOINT ["pipenv", "run", "python", "-u", "daemon.py"]
+ENTRYPOINT ["pipenv", "run", "python", "-u", "river.py", "--daemon"]
