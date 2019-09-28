@@ -70,7 +70,8 @@ def job_wrapper(cfg: dict) -> None:
     if logger.has_error and cfg['mail']:
         logs = logger.flush()
         log = '\n'.join(logs)
-        mailer.send_text(log, "Bad news everyone!", cfg['RiverGmailUsername'], cfg['RiverGmailPassword'], cfg['UserEmail'])
+        mailer.send_text(log, "Bad news everyone!", cfg['RiverGmailUsername'], cfg['RiverGmailPassword'],
+                         cfg['UserEmail'])
     logger.flush()
 
 
@@ -111,7 +112,8 @@ def job(cfg: dict) -> bool:
     # Print report
     if cfg['mail']:
         logger.log("Sending report")
-        send_ok = mailer.send_html(report['msg'], None, "River Report", report['attachments'], cfg['RiverGmailUsername'], cfg['RiverGmailPassword'], cfg['UserEmail'])
+        send_ok = mailer.send_html(report['msg'], None, "River Report", report['attachments'],
+                                   cfg['RiverGmailUsername'], cfg['RiverGmailPassword'], cfg['UserEmail'])
         if not send_ok:
             return False
     else:
@@ -139,8 +141,7 @@ def main(args: argparse.Namespace) -> None:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="This is the Daemon of River Tam.")
-    parser.add_argument('--now', action='store_true',
-                        help="Do not wait for the right time, unleash the Daemon now!")
+    parser.add_argument('--now', action='store_true', help="Do not wait for the right time, unleash the Daemon now!")
     parser.add_argument('-c', '--config', default='settings.json', help="Path to config file")
     parser.add_argument('-update-db', default=False, help="Update database")
     parser.add_argument('--mail', action='store_true', help="Send report with email")

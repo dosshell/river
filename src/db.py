@@ -3,7 +3,6 @@ import sqlite3
 
 class Database:
     '''A simple database interface'''
-
     def __init__(self):
         self._conn = None
 

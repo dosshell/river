@@ -11,7 +11,7 @@ before_script:
 flake8:
   script:
     - python -m pip install flake8
-    - python -m flake8 --ignore=E501
+    - python -m flake8 --config=./src/.flake8
 
 unit_tests:
   script:
