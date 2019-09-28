@@ -19,11 +19,6 @@ def request_post(url, data=None, headers=None) -> MockResponse:
                         "pushSubscriptionId": "19a1facdf9f1917d3398a994b4a0f5dc9f0e7283",
                         "registrationComplete": true
                      }"""
-        return MockResponse(content,
-                            200,
-                            headers={
-                                'X-SecurityToken':
-                                '40b33e79-a0d6-4432-955e-6d395b6ca0c8'
-                            })
+        return MockResponse(content, 200, headers={'X-SecurityToken': '40b33e79-a0d6-4432-955e-6d395b6ca0c8'})
     else:
         return MockResponse(None, 404)

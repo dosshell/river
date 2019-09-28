@@ -12,7 +12,8 @@ class Attachment:
     cid = None
 
 
-def send_html(html_code: str, text_msg: str, subject: str, attachments: List[Attachment], from_user: str, from_password: str, to_email: str) -> bool:
+def send_html(html_code: str, text_msg: str, subject: str, attachments: List[Attachment], from_user: str,
+              from_password: str, to_email: str) -> bool:
     gmail_address = from_user
     gmail_password = from_password
 

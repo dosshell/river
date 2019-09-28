@@ -1,7 +1,6 @@
 from typing import List
 import datetime
 
-
 has_error: bool = False
 log_history: List[str] = []
 

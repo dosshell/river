@@ -22,11 +22,7 @@ class Avanza:
             'User-Agent': 'Avanza/se.avanzabank.androidapplikation (3.21.2 (585); Android 6.0)',
             'Content-Type': 'application/json; charset=UTF-8'
         }
-        data = {
-            'maxInactiveMinutes': 240,
-            'password': password,
-            'username': username
-        }
+        data = {'maxInactiveMinutes': 240, 'password': password, 'username': username}
         response = requests.post(url, data=json.dumps(data), headers=headers)
         if response.status_code == 401:
             logger.error("Access denied. Response code from avanza was 401")
@@ -35,7 +31,8 @@ class Avanza:
             logger.error("Authentication failed. Response code from avanza was " + str(response.status_code))
             return False
         if not response.headers['Content-Type'] == 'application/json;charset=utf-8':
-            logger.error("Authentication error. Content-Type from avanza was not as expected, got " + response.headers['Content-Type'])
+            logger.error("Authentication error. Content-Type from avanza was not as expected, got " +
+                         response.headers['Content-Type'])
             return False
 
         content = json.loads(response.content)
@@ -46,11 +43,7 @@ class Avanza:
             'Content-Type': 'application/json; charset=UTF-8',
             'VND.se.avanza.security-Totp-Transaction-Id': transaction_id
         }
-        data = {
-            "maxInactiveMinutes": 240,
-            "method": "TOTP",
-            "totpCode": totp_code
-        }
+        data = {"maxInactiveMinutes": 240, "method": "TOTP", "totpCode": totp_code}
         response = requests.post(url, data=json.dumps(data), headers=headers)
         if not response.ok:
             logger.error(f"""2FA failed. Used key {totp_code}. Response code was """ + str(response.status_code))
