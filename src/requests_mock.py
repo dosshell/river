@@ -1,3 +1,6 @@
+import json as libjson
+
+
 class MockResponse:
     def __init__(self, data="", status_code=200, headers={}):
         self.content = data
@@ -5,6 +8,13 @@ class MockResponse:
         self.ok = (status_code == 200)
         self.headers = headers
         self.headers['Content-Type'] = 'application/json;charset=utf-8'
+
+    def json(self, object_hook=None):
+        d = libjson.loads(self.content)
+        if object_hook is None:
+            return d
+        else:
+            return object_hook(d)
 
 
 def request_post(url, data=None, headers=None) -> MockResponse:

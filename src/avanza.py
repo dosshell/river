@@ -2,6 +2,7 @@ import requests
 import json
 import logger
 import datetime
+import avanza_api
 
 
 class Avanza:
@@ -13,48 +14,26 @@ class Avanza:
         self.security_token: str = ''
 
     def login(self, username: str, password: str, totp_code: str) -> bool:
-        if not all([username, password, totp_code]):
-            logger.error("Username, password or totp_code is missing")
-            return False
+        auth_response = avanza_api.authenticate(username, password)
+        if type(auth_response) is avanza_api.ResponseError:
+            if auth_response.status_code == 401:
+                logger.error("Access denied. Response code from avanza was 401")
+                return False
+            else:
+                logger.error("Authentication failed. Response code from avanza was " + str(auth_response.status_code))
+                return False
 
-        url = 'https://www.avanza.se/_api/authentication/sessions/usercredentials'
-        headers = {
-            'User-Agent': 'Avanza/se.avanzabank.androidapplikation (3.21.2 (585); Android 6.0)',
-            'Content-Type': 'application/json; charset=UTF-8'
-        }
-        data = {'maxInactiveMinutes': 240, 'password': password, 'username': username}
-        response = requests.post(url, data=json.dumps(data), headers=headers)
-        if response.status_code == 401:
-            logger.error("Access denied. Response code from avanza was 401")
-            return False
-        elif not response.ok:
-            logger.error("Authentication failed. Response code from avanza was " + str(response.status_code))
-            return False
-        if not response.headers['Content-Type'] == 'application/json;charset=utf-8':
-            logger.error("Authentication error. Content-Type from avanza was not as expected, got " +
-                         response.headers['Content-Type'])
-            return False
+        totp_response = avanza_api.verify_totp(totp_code, auth_response.two_factor_login.transaction_id)
 
-        content = json.loads(response.content)
-        transaction_id = content['twoFactorLogin']['transactionId']
-        url = 'https://www.avanza.se/_api/authentication/sessions/totp'
-        headers = {
-            'User-Agent': 'Avanza/se.avanzabank.androidapplikation (3.21.2 (585); Android 6.0)',
-            'Content-Type': 'application/json; charset=UTF-8',
-            'VND.se.avanza.security-Totp-Transaction-Id': transaction_id
-        }
-        data = {"maxInactiveMinutes": 240, "method": "TOTP", "totpCode": totp_code}
-        response = requests.post(url, data=json.dumps(data), headers=headers)
-        if not response.ok:
-            logger.error(f"""2FA failed. Used key {totp_code}. Response code was """ + str(response.status_code))
+        if type(totp_response) is avanza_api.ResponseError:
+            logger.error(f"""2FA failed. Used key {totp_code}. Response code was """ + str(totp_response.status_code))
             return False
-        content = json.loads(response.content)
 
         self.is_authed = True
-        self.customer_id = content['customerId']
-        self.authentication_session = content['authenticationSession']
-        self.push_subscription_id = content['pushSubscriptionId']
-        self.security_token = response.headers['X-SecurityToken']
+        self.customer_id = totp_response.customer_id
+        self.authentication_session = totp_response.authentication_session
+        self.push_subscription_id = totp_response.push_subscription_id
+        self.security_token = totp_response.security_token
         return True
 
     def get_instrument(self, instrument_id: str, period: str = 'five_years') -> None:

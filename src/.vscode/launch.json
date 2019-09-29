@@ -5,20 +5,20 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "run daemon text",
+            "name": "run river text",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/daemon.py",
+            "program": "${workspaceFolder}/river.py",
             "console": "integratedTerminal",
-            "args": ["--now", "-c", "../settings.json"]
+            "args": ["-c", "../settings.json"]
         },
         {
-            "name": "run daemon mail",
+            "name": "run river mail",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/daemon.py",
+            "program": "${workspaceFolder}/river.py",
             "console": "integratedTerminal",
-            "args": ["--now", "-c", "../settings.json", "--mail"]
+            "args": ["-c", "../settings.json", "--mail"]
         }
     ]
 }
