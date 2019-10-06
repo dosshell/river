@@ -8,7 +8,7 @@ def example_plot(x, y):
     fig, ax = plt.subplots()
     ax.plot(x, y)
 
-    ax.set(xlabel='Time', ylabel='Percentage [%]', title='About as simple as it gets, folks')
+    ax.set(xlabel='Time', ylabel='Percentage [%]', title='Half of writing history is hiding the truth')
     ax.grid()
 
     fig.savefig(buf, format='png')
