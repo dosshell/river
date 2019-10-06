@@ -40,7 +40,8 @@ def generate_report_email(res: Result) -> str:
         </p>
         <img alt="hej" src="cid:1" />
         <p>
-            Two by two, hands of blue.
+            Two by two. Hands of blue.<br />
+            // River Daemon
         </p>
     </body>
     </html>
