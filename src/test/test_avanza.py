@@ -26,3 +26,11 @@ class TestAvanza(unittest.TestCase):
         avanza_client = avanza.Avanza()
         self.assertIsNotNone(avanza_client)
         self.assertTrue(avanza_client.login(username, password, totp_code))
+
+    @patch('requests.get', new=requests_mock.request_get)
+    def test_get_fund_ids(self):
+        avanza_client = avanza.Avanza()
+        ids = avanza_client._get_fund_ids()
+        self.assertEqual(len(ids), 120)
+        self.assertEqual(ids[0], '80265')
+        self.assertEqual(ids[-1], '944976')
