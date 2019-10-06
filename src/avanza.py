@@ -1,5 +1,3 @@
-import requests
-import json
 import logger
 import datetime
 import avanza_api
