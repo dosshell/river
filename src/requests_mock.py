@@ -1,4 +1,10 @@
 import json as libjson
+import urllib.parse
+
+
+def get_file_content(filename) -> str:
+    with open('test/' + filename, "r") as f:
+        return f.read()
 
 
 class MockResponse:
@@ -28,3 +34,22 @@ def request_post(url, data=None, headers=None) -> MockResponse:
         return MockResponse(content, 200, headers={'X-SecurityToken': '40b33e79-a0d6-4432-955e-6d395b6ca0c8'})
     else:
         return MockResponse(None, 404)
+
+
+def request_get(url, headers=None) -> MockResponse:
+    o = urllib.parse.urlparse(url)
+
+    if o.path == '/fonder/lista.html' and o.query == '':
+        content = get_file_content('lista.html')
+        return MockResponse(content)
+    elif o.path == '/fonder/lista.html':
+        q = urllib.parse.parse_qs(o.query)
+        if 'page' not in q:
+            return None
+        p = int(q['page'][0])
+        if p > 4 or p < 1:
+            return None
+        content = get_file_content(f"""lista_page{p}.html""")
+        return MockResponse(content)
+    else:
+        return None
