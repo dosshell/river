@@ -10,11 +10,7 @@ class MockResponse:
         self.headers['Content-Type'] = 'application/json;charset=utf-8'
 
     def json(self, object_hook=None):
-        d = libjson.loads(self.content)
-        if object_hook is None:
-            return d
-        else:
-            return object_hook(d)
+        return libjson.loads(self.content, object_hook=object_hook)
 
 
 def request_post(url, data=None, headers=None) -> MockResponse:
