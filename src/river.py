@@ -28,14 +28,21 @@ def generate_report_email(res: Result) -> str:
     report = {}
     report['attachments'] = []
     report['msg'] = f"""
+    <!DOCTYPE html>
     <html>
-        Own capital: {pretty_int(res.own_capital)}</br>
-        In the mattress: {pretty_int(res.value_in_the_mattress)}</br>
-        On the table: {pretty_int(res.value_on_the_table)}</br>
-        Current investment: {pretty_int(res.current_investment)}</br>
-        Profit: {pretty_int(res.profit)}</br>
+    <body>
+        <p>
+            Own capital: {pretty_int(res.own_capital)}<br/>
+            In the mattress: {pretty_int(res.value_in_the_mattress)}<br/>
+            On the table: {pretty_int(res.value_on_the_table)}<br/>
+            Current investment: {pretty_int(res.current_investment)}<br/>
+            Profit: {pretty_int(res.profit)}<br/>
+        </p>
         <img alt="hej" src="cid:1" />
-        <p>Two by two, hands of blue.</p>
+        <p>
+            Two by two, hands of blue.
+        </p>
+    </body>
     </html>
     """
 

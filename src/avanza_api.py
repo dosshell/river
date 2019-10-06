@@ -12,14 +12,15 @@ class ResponseError:
         self.errors: List[any] = errors
 
 
-class TwoFactorAuthenticationResponse:
-    class Totp:
-        def __init__(self, method=None, transactionId=None):
-            self.method: str = method
-            self.transaction_id: str = transactionId
+class Totp:
+    def __init__(self, method=None, transactionId=None):
+        self.method: str = method
+        self.transaction_id: str = transactionId
 
+
+class TwoFactorAuthenticationResponse:
     def __init__(self, twoFactorLogin):
-        self.two_factor_login = TwoFactorAuthenticationResponse.Totp(**twoFactorLogin)
+        self.two_factor_login = twoFactorLogin
 
 
 class TotpAuthentication:
@@ -36,6 +37,15 @@ class TotpAuthentication:
         self.security_token: str = securityToken
 
 
+def authenticate_decoder(dct):
+    if 'method' in dct and 'transactionId' in dct:
+        return Totp(**dct)
+    elif 'twoFactorLogin' in dct:
+        return TwoFactorAuthenticationResponse(**dct)
+    else:
+        return dct
+
+
 def authenticate(username: str, password: str) -> TwoFactorAuthenticationResponse:
     url = 'https://www.avanza.se/_api/authentication/sessions/usercredentials'
     headers = {
@@ -46,7 +56,7 @@ def authenticate(username: str, password: str) -> TwoFactorAuthenticationRespons
     response = requests.post(url, data=json.dumps(data), headers=headers)
     if not response.ok:
         return response.json(object_hook=lambda x: ResponseError(**x))
-    return response.json(object_hook=lambda x: TwoFactorAuthenticationResponse(**x))
+    return response.json(object_hook=authenticate_decoder)
 
 
 def verify_totp(totp_code: str, transaction_id: str) -> TotpAuthentication:
