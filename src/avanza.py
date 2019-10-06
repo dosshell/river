@@ -118,3 +118,6 @@ class Avanza:
             if account['depositable']:
                 balance = balance + account['ownCapital']
         return int(balance)
+
+    def _get_fund_ids(self):
+        return avanza_api.get_fund_ids()
