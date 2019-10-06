@@ -48,10 +48,7 @@ def authenticate_decoder(dct):
 
 def authenticate(username: str, password: str) -> TwoFactorAuthenticationResponse:
     url = 'https://www.avanza.se/_api/authentication/sessions/usercredentials'
-    headers = {
-        'User-Agent': 'Avanza API client/1.3.0',
-        'Content-Type': 'application/json;charset=UTF-8'
-    }
+    headers = {'User-Agent': 'Avanza API client/1.3.0', 'Content-Type': 'application/json;charset=UTF-8'}
     data = {'maxInactiveMinutes': 240, 'password': password, 'username': username}
     response = requests.post(url, data=json.dumps(data), headers=headers)
     if not response.ok:
@@ -68,7 +65,68 @@ def verify_totp(totp_code: str, transaction_id: str) -> TotpAuthentication:
     }
     data = {"maxInactiveMinutes": 240, "method": "TOTP", "totpCode": totp_code}
     response = requests.post(url, data=json.dumps(data), headers=headers)
-    if not response.ok:
+    if response.ok:
+        return response.json(
+            object_hook=lambda x: TotpAuthentication(securityToken=response.headers['X-SecurityToken'], **x))
+    else:
         return response.json(object_hook=lambda x: ResponseError(**x))
-    return response.json(
-        object_hook=lambda x: TotpAuthentication(securityToken=response.headers['X-SecurityToken'], **x))
+
+
+def get_transactions(transaction_type: str, security_token: str, authentication_session: str):
+    url = f'''https://www.avanza.se/_mobile/account/transactions/{transaction_type}?from=2000-01-01'''
+    headers = {
+        'User-Agent': 'Avanza API client/1.3.0',
+        'Content-Type': 'application/json; charset=UTF-8',
+        'X-SecurityToken': security_token,
+        'X-AuthenticationSession': authentication_session
+    }
+    response = requests.get(url, headers=headers)
+    if (response.ok):
+        return response.json()
+    else:
+        return response.json(object_hook=lambda x: ResponseError(**x))
+
+
+def get_account_overview(account_id: str, security_token: str, authentication_session: str) -> dict:
+    url = f'https://www.avanza.se/_mobile/account/{account_id}/overview'
+    headers = {
+        'User-Agent': 'Avanza API client/1.3.0',
+        'Content-Type': 'application/json; charset=UTF-8',
+        'X-SecurityToken': security_token,
+        'X-AuthenticationSession': authentication_session
+    }
+    response = requests.get(url, headers=headers)
+    if (response.ok):
+        return response.json()
+    else:
+        return response.json(object_hook=lambda x: ResponseError(**x))
+
+
+def get_overview(security_token, authentication_session) -> dict:
+    url = 'https://www.avanza.se/_mobile/account/overview'
+    headers = {
+        'User-Agent': 'Avanza API client/1.3.0',
+        'Content-Type': 'application/json; charset=UTF-8',
+        'X-SecurityToken': security_token,
+        'X-AuthenticationSession': authentication_session
+    }
+    response = requests.get(url, headers=headers)
+    if response.ok:
+        return response.json()
+    else:
+        return response.json(object_hook=lambda x: ResponseError(**x))
+
+
+def get_account_chart(account_id, security_token, authentication_session):
+    url = f'''https://www.avanza.se/_mobile/chart/account/{account_id}?timePeriod=one_year'''
+    headers = {
+        'User-Agent': 'Avanza API client/1.3.0',
+        'Content-Type': 'application/json; charset=UTF-8',
+        'X-SecurityToken': security_token,
+        'X-AuthenticationSession': authentication_session
+    }
+    response = requests.get(url, headers=headers)
+    if response.ok:
+        return response.json()
+    else:
+        return response.json(object_hook=lambda x: ResponseError(**x))

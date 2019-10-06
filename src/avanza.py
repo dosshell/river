@@ -48,18 +48,10 @@ class Avanza:
     def _get_transactions(self, transaction_type: str) -> dict:
         if not self.is_authed:
             return None
-        url = f'''https://www.avanza.se/_mobile/account/transactions/{transaction_type}?from=2000-01-01'''
-        headers = {
-            'User-Agent': 'Avanza API client/1.3.0',
-            'Content-Type': 'application/json; charset=UTF-8',
-            'X-SecurityToken': self.security_token,
-            'X-AuthenticationSession': self.authentication_session
-        }
-        response = requests.get(url, headers=headers)
-        if (response.ok):
-            return json.loads(response.content)
-        else:
+        response = avanza_api.get_transactions(transaction_type, self.security_token, self.authentication_session)
+        if response is avanza_api.ResponseError:
             return None
+        return response
 
     def get_account_chart(self):
         if not self.is_authed:
@@ -71,18 +63,10 @@ class Avanza:
             return None
         account_id = good_accounts[0]
 
-        url = f'''https://www.avanza.se/_mobile/chart/account/{account_id}?timePeriod=one_year'''
-        headers = {
-            'User-Agent': 'Avanza API client/1.3.0',
-            'Content-Type': 'application/json; charset=UTF-8',
-            'X-SecurityToken': self.security_token,
-            'X-AuthenticationSession': self.authentication_session
-        }
-        response = requests.get(url, headers=headers)
-        if not response.ok:
+        data = avanza_api.get_account_chart(account_id, self.security_token, self.authentication_session)
+        if data is avanza_api.ResponseError:
             return None
 
-        data = json.loads(response.content)
         dates = [datetime.datetime.strptime(x['date'], '%Y-%m-%d') for x in data['dataSeries']]
         values = [x['value'] for x in data['dataSeries']]
         return (dates, values)
@@ -90,35 +74,16 @@ class Avanza:
     def _get_overview(self) -> dict:
         if (not self.is_authed):
             return None
-        url = 'https://www.avanza.se/_mobile/account/overview'
-        headers = {
-            'User-Agent': 'Avanza API client/1.3.0',
-            'Content-Type': 'application/json; charset=UTF-8',
-            'X-SecurityToken': self.security_token,
-            'X-AuthenticationSession': self.authentication_session
-        }
-        response = requests.get(url, headers=headers)
-        if response.ok:
-            return json.loads(response.content)
-        else:
+        response = avanza_api.get_overview(self.security_token, self.authentication_session)
+        if response is avanza_api.ResponseError:
             return None
+        return response
 
     def _get_account_overview(self, account_id: str) -> dict:
-        if not self.is_authed:
+        response = avanza_api.get_account_overview(account_id, self.security_token, self.authentication_session)
+        if response is avanza_api.ResponseError:
             return None
-
-        url = f'https://www.avanza.se/_mobile/account/{account_id}/overview'
-        headers = {
-            'User-Agent': 'Avanza API client/1.3.0',
-            'Content-Type': 'application/json; charset=UTF-8',
-            'X-SecurityToken': self.security_token,
-            'X-AuthenticationSession': self.authentication_session
-        }
-        response = requests.get(url, headers=headers)
-        if (response.ok):
-            return json.loads(response.content)
-        else:
-            return None
+        return response
 
     def get_current_investment(self) -> int:
         if not self.is_authed:
