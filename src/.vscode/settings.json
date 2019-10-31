@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": "C:\\Users\\markus\\.virtualenvs\\src-HEStxFA1\\Scripts\\python.exe",
+    "python.pythonPath": "/home/markus/.local/share/virtualenvs/src-fpf1kJw9/bin/python",
     "python.testing.unittestArgs": [
         "-v",
         "-s",
