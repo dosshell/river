@@ -11,6 +11,6 @@ yapf = "*"
 requests = "*"
 schedule = "*"
 matplotlib = "*"
-beautifulsoup4 = "*"
+apsw = {path = "./../dep/apsw-3.29.0.post1-cp36-cp36m-linux_x86_64.whl"}
 
 [requires]
