@@ -1,8 +1,6 @@
 import json
 import requests
 from typing import List, Dict
-from bs4 import BeautifulSoup
-import re
 
 
 class ResponseError:
@@ -134,37 +132,38 @@ def get_account_chart(account_id, security_token, authentication_session):
         return response.json(object_hook=lambda x: ResponseError(**x))
 
 
-def get_fund_ids():
-    url = 'https://www.avanza.se/fonder/lista.html'
+def get_fund_list():
+    url = 'https://www.avanza.se/_cqbe/fund/list'
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0',
+        'Content-Type': 'application/json; charset=UTF-8',
+        'X-SecurityToken': '-'
     }
-    response = requests.get(url, headers=headers)
+    data = {
+        "startIndex": 0,
+        "indexFund": False,
+        "lowCo2": False,
+        "regionFilter": [],
+        "countryFilter": [],
+        "alignmentFilter": [],
+        "industryFilter": [],
+        "fundTypeFilter": [],
+        "interestTypeFilter": [],
+        "sortField": "name",
+        "sortDirection": "ASCENDING",
+        "name": "",
+        "recommendedHoldingPeriodFilter": [],
+        "companyFilter": []
+    }
+    response = requests.get(url, headers=headers, data=json.dumps(data))
     if not response.ok:
         return None
-
-    soup = BeautifulSoup(response.content, 'html.parser')
-    ctw = soup.find(id='contentTableWrapper')
-    last_page = ctw.find(string=re.compile(r'\s*Sista\s*'))
-    if last_page is None:
-        return None
-    last_page_str = last_page.parent['data-requestedpage']
-    if last_page_str is None:
-        return None
-    to = int(last_page_str)
-
-    fund_ids = []
-    for page in range(1, to + 1):
-        url = (f'https://www.avanza.se/fonder/lista.html?disableSelection=false&name=&page={page}'
-               f'&sortField=NAME&sortOrder=ASCENDING&activeTab=overview')
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0',
-        }
-        response = requests.get(url, headers=headers)
-        soup = BeautifulSoup(response.content, 'html.parser')
-        ct = soup.find(id='contentTable')
-        rows = ct.tbody.find_all('tr')
-        data_oids = [x['data-oid'] for x in rows]
-        fund_ids.extend(data_oids)
-
-    return fund_ids
+    number_of_funds = response.json()['totalNoFunds']
+    funds = []
+    for start_index in range(0, number_of_funds, 20):
+        data['startIndex'] = start_index
+        response = requests.get(url, headers=headers, data=json.dumps(data))
+        if not response.ok:
+            return None
+        funds.extend(response.json()['fundListViews'])
+    return funds

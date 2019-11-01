@@ -119,5 +119,6 @@ class Avanza:
                 balance = balance + account['ownCapital']
         return int(balance)
 
-    def _get_fund_ids(self):
-        return avanza_api.get_fund_ids()
+    def get_fund_list(self):
+        # convert to pandas here?
+        return avanza_api.get_fund_list()
