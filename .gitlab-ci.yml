@@ -5,12 +5,16 @@ variables:
 
 flake8:
   image: python:3.6-slim-stretch
+  only:
+    - merge_requests
   script:
     - python -m pip install flake8
     - python -m flake8 --config=./src/.flake8
 
 unit_tests:
   image: python:3.6-slim-stretch
+  only:
+    - merge_requests
   script:
     - cd ./src
     - python -m pip install pipenv
@@ -21,13 +25,19 @@ docker_test:
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
+  only:
+    - merge_requests
   script:
     - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
-    - cat /kaniko/.docker/config.json
     - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --no-push 
-    # - pwd
-    # - ls -lah
-    # - cd scripts
-    # - ls -lah
-    # - cat run_container_once.sh
-    # - ./run_container_once.sh --help
+
+deploy:
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  script:
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG
+  only:
+    - tags
+    - master
