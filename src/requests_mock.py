@@ -2,9 +2,9 @@ import json as libjson
 import urllib.parse
 
 
-def get_file_content(filename) -> str:
+def get_json_file_content(filename) -> str:
     with open('test/' + filename, "r") as f:
-        return f.read()
+        return libjson.load(f)
 
 
 class MockResponse:
@@ -36,20 +36,11 @@ def request_post(url, data=None, headers=None) -> MockResponse:
         return MockResponse(None, 404)
 
 
-def request_get(url, headers=None) -> MockResponse:
+def request_get(url, headers=None, data=None) -> MockResponse:
     o = urllib.parse.urlparse(url)
-
-    if o.path == '/fonder/lista.html' and o.query == '':
-        content = get_file_content('lista.html')
-        return MockResponse(content)
-    elif o.path == '/fonder/lista.html':
-        q = urllib.parse.parse_qs(o.query)
-        if 'page' not in q:
-            return None
-        p = int(q['page'][0])
-        if p > 4 or p < 1:
-            return None
-        content = get_file_content(f"""lista_page{p}.html""")
-        return MockResponse(content)
+    if o.path == '/_cqbe/fund/list':
+        content = get_json_file_content('fund_list.json')
+        start_index = libjson.loads(data)['startIndex']
+        return MockResponse(libjson.dumps(content[str(start_index)]))
     else:
         return None
