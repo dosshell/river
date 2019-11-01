@@ -1,15 +1,21 @@
 import logger
 import datetime
 import avanza_api
+import apsw
+# import pandas as pd
 
 
 class Avanza:
-    def __init__(self):
+    def __init__(self, cache_db: apsw.Connection = None):
         self.is_authed: bool = False
         self.customer_id: str = ''
         self.authentication_session: str = ''
         self.push_subscription_id: str = ''
         self.security_token: str = ''
+        if cache_db is None:
+            self.cache_db = apsw.Connection(':memory:')
+        else:
+            self.cache_db = cache_db
 
     def login(self, username: str, password: str, totp_code: str) -> bool:
         auth_response = avanza_api.authenticate(username, password)
@@ -33,6 +39,17 @@ class Avanza:
         self.push_subscription_id = totp_response.push_subscription_id
         self.security_token = totp_response.security_token
         return True
+
+    def fetch(self):
+        cursor = self.cache_db.cursor()
+
+        # Create tables if needed
+        cursor.execute('''CREATE TABLE IF NOT EXISTS fund_list(
+                fund_id INTEGER PRIMARY KEY,
+                name TEXT NOT NULL UNIQUE
+            )''')
+        # Update some index table
+        self.get_fund_list()
 
     def get_instrument(self, instrument_id: str, period: str = 'five_years') -> None:
         pass

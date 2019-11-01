@@ -34,3 +34,9 @@ class TestAvanza(unittest.TestCase):
         self.assertEqual(len(ids), 60)
         self.assertEqual(ids[2]['name'], 'AGCM Asia Growth RC SEK')
         self.assertEqual(ids[55]['orderbookId'], 736)
+
+    @patch('requests.get', new=requests_mock.request_get)
+    def test_fetch(self):
+        avanza_client = avanza.Avanza()
+        avanza_client.fetch()
+        self.assertTrue(True)
