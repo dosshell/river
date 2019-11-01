@@ -4,6 +4,7 @@ FROM python:3.6-slim-stretch
 WORKDIR /app
 
 COPY ./src /app
+COPY ./dep /dep
 
 RUN python -m pip install pipenv
 RUN python -m pipenv sync
