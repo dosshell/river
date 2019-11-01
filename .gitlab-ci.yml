@@ -1,21 +1,33 @@
-image: python:3.6-slim-stretch
-
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
   LC_ALL: C.UTF-8
   LANG: C.UTF-8
 
-before_script:
-  - python -V
-
 flake8:
+  image: python:3.6-slim-stretch
   script:
     - python -m pip install flake8
     - python -m flake8 --config=./src/.flake8
 
 unit_tests:
+  image: python:3.6-slim-stretch
   script:
     - cd ./src
     - python -m pip install pipenv
     - python -m pipenv sync
     - python -m pipenv run python -m unittest
+
+docker_test:
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  script:
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    - cat /kaniko/.docker/config.json
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --no-push 
+    # - pwd
+    # - ls -lah
+    # - cd scripts
+    # - ls -lah
+    # - cat run_container_once.sh
+    # - ./run_container_once.sh --help

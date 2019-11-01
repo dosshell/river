@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # run this file on the server to update to latest
 
