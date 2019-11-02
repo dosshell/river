@@ -46,5 +46,8 @@ def request_get(url, headers=None, data=None) -> MockResponse:
     elif o.path == '/_mobile/market/fund/1949':
         content = get_file_content('fund_1949.json')
         return MockResponse(content)
+    elif o.path == '/_cqbe/fund/chart/1949/2010-01-01/2011-01-01':
+        content = get_file_content('fund_chart_1949_2010.json')
+        return MockResponse(content)
     else:
         return None
