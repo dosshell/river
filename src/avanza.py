@@ -2,7 +2,21 @@ import logger
 import datetime
 import avanza_api
 import apsw
-# import pandas as pd
+import pandas as pd
+
+
+def df_to_sql(df: pd.DataFrame, cursor, table_name: str) -> None:
+    qs = ','.join(['?'] * len(df.columns))
+    cs = ','.join(df.columns.tolist())
+    cursor.executemany(f'''insert or ignore into {table_name} ({cs}) values({qs})''', df.values.tolist())
+
+
+def sql_to_df(cursor, table_name: str) -> pd.DataFrame:
+    r = cursor.execute(f'''select * from {table_name}''')
+    headers = [x[0] for x in r.getdescription()]
+    data = r.fetchall()
+    df = pd.DataFrame.from_records(data, columns=headers)
+    return df
 
 
 class Avanza:
@@ -45,19 +59,19 @@ class Avanza:
 
         # Create tables if needed
         cursor.execute('''CREATE TABLE IF NOT EXISTS fund_list(
-                fund_id INTEGER PRIMARY KEY,
+                orderbook_id INTEGER PRIMARY KEY,
                 name TEXT NOT NULL UNIQUE
             )''')
         # Update some index table
-        self.get_fund_list()
+        fund_list = avanza_api.get_fund_list()
+        orderbook_ids = [int(x['orderbookId']) for x in fund_list]
+        names = [x['name'] for x in fund_list]
+        data = {'orderbook_id': orderbook_ids, 'name': names}
+        df = pd.DataFrame(data, columns=['orderbook_id', 'name'])
+        df_to_sql(df, cursor, 'fund_list')
+        print('a')
 
     def get_instrument(self, instrument_id: str, period: str = 'five_years') -> None:
-        pass
-
-    def get_all_instrument_ids(self) -> None:
-        pass
-
-    def get_all_instruments(self) -> None:
         pass
 
     def _get_transactions(self, transaction_type: str) -> dict:
@@ -137,5 +151,4 @@ class Avanza:
         return int(balance)
 
     def get_fund_list(self):
-        # convert to pandas here?
-        return avanza_api.get_fund_list()
+        return sql_to_df(self.cache_db.cursor(), 'fund_list')
