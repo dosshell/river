@@ -169,8 +169,8 @@ def get_fund_list():
     return funds
 
 
-def get_fund(orderbookId: int):
-    url = f'''https://www.avanza.se/_mobile/market/fund/{orderbookId}'''
+def get_fund(orderbook_id: int):
+    url = f'''https://www.avanza.se/_mobile/market/fund/{orderbook_id}'''
     headers = {
         'User-Agent': 'Avanza API client/1.3.0',
         'Content-Type': 'application/json; charset=UTF-8'
@@ -180,3 +180,4 @@ def get_fund(orderbookId: int):
         return response.json()
     else:
         return response.json(object_hook=lambda x: ResponseError(**x))
+
