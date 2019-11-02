@@ -5,6 +5,7 @@ import settings_mock
 from unittest.mock import patch
 import avanza
 import requests_mock
+import pandas as pd
 
 
 class TestAvanza(unittest.TestCase):
@@ -30,10 +31,8 @@ class TestAvanza(unittest.TestCase):
     @patch('requests.get', new=requests_mock.request_get)
     def test_get_fund_list(self):
         avanza_client = avanza.Avanza()
-        ids = avanza_client.get_fund_list()
-        self.assertEqual(len(ids), 60)
-        self.assertEqual(ids[2]['name'], 'AGCM Asia Growth RC SEK')
-        self.assertEqual(ids[55]['orderbookId'], 736)
+        fund_list = avanza_client.get_fund_list()
+        self.assertTrue(type(fund_list) is pd.DataFrame)
 
     @patch('requests.get', new=requests_mock.request_get)
     def test_fetch(self):
