@@ -11,6 +11,14 @@ def df_to_sql(df: pd.DataFrame, cursor, table_name: str) -> None:
     cursor.executemany(f'''insert or ignore into {table_name} ({cs}) values({qs})''', df.values.tolist())
 
 
+def sql_to_df(cursor, table_name: str) -> pd.DataFrame:
+    r = cursor.execute(f'''select * from {table_name}''')
+    headers = [x[0] for x in r.getdescription()]
+    data = r.fetchall()
+    df = pd.DataFrame.from_records(data, columns=headers)
+    return df
+
+
 class Avanza:
     def __init__(self, cache_db: apsw.Connection = None):
         self.is_authed: bool = False
@@ -64,12 +72,6 @@ class Avanza:
         print('a')
 
     def get_instrument(self, instrument_id: str, period: str = 'five_years') -> None:
-        pass
-
-    def get_all_instrument_ids(self) -> None:
-        pass
-
-    def get_all_instruments(self) -> None:
         pass
 
     def _get_transactions(self, transaction_type: str) -> dict:
@@ -149,5 +151,4 @@ class Avanza:
         return int(balance)
 
     def get_fund_list(self):
-        # convert to pandas here?
-        return avanza_api.get_fund_list()
+        return sql_to_df(self.cache_db.cursor(), 'fund_list')
