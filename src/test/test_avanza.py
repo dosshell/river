@@ -6,6 +6,7 @@ from unittest.mock import patch
 import avanza
 import requests_mock
 import pandas as pd
+import apsw
 
 
 class TestAvanza(unittest.TestCase):
@@ -30,7 +31,8 @@ class TestAvanza(unittest.TestCase):
 
     @patch('requests.get', new=requests_mock.request_get)
     def test_get_fund_list(self):
-        avanza_client = avanza.Avanza()
+        test_db = apsw.Connection('test/test.db')
+        avanza_client = avanza.Avanza(test_db)
         fund_list = avanza_client.get_fund_list()
         self.assertTrue(type(fund_list) is pd.DataFrame)
 
@@ -38,4 +40,5 @@ class TestAvanza(unittest.TestCase):
     def test_fetch(self):
         avanza_client = avanza.Avanza()
         avanza_client.fetch()
-        self.assertTrue(True)
+        fund_list = avanza_client.get_fund_list()
+        self.assertEqual(len(fund_list), 60)
