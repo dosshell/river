@@ -16,3 +16,8 @@ class TestAvanzaApi(unittest.TestCase):
         self.assertEqual(len(fund_list), 60)
         self.assertEqual(fund_list[2]['name'], 'AGCM Asia Growth RC SEK')
         self.assertEqual(fund_list[55]['orderbookId'], 736)
+
+    @patch('requests.get', new=requests_mock.request_get)
+    def test_get_fund(self):
+        fund = avanza_api.get_fund(1949)
+        self.assertEqual(type(fund), dict)

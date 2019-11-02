@@ -1,0 +1,73 @@
+{
+    "hasInvestmentFees": true,
+    "administrators": "Tomas Risbecker",
+    "buyable": true,
+    "sellable": true,
+    "name": "AMF Aktiefond Sverige",
+    "id": "1949",
+    "description": "Fonden placerar i svenska marknadsnoterade aktier och aktierelaterade instrument.",
+    "sharpeRatio": 0.85,
+    "riskLevel": "MIDDLE",
+    "domicile": "Sverige",
+    "isin": "SE0000739195",
+    "risk": 5,
+    "managementFee": 0.4,
+    "prospectus": "http://doc.morningstar.com/document/15e4c4fdde800fdfdb81c56d7b5939ea.msdoc/?clientid=avanza&key=3728b8f503435715",
+    "buyFee": 0.0,
+    "capital": 32048614219.0,
+    "normanAmount": 0.0,
+    "rating": 3,
+    "sellFee": 0.0,
+    "standardDeviation": 12.38,
+    "startDate": "1998-12-30",
+    "tradingCurrency": "SEK",
+    "loanFactor": 80.0,
+    "NAV": 639.31,
+    "NAVLastUpdated": "2019-10-31T00:00:00.000+0100",
+    "changeSinceOneDay": -0.42831,
+    "changeSinceOneWeek": -0.17488,
+    "changeSinceOneMonth": 3.47836,
+    "changeSinceThreeMonths": 4.60771,
+    "changeSinceSixMonths": 2.49788,
+    "changeSinceTurnOfTheYear": 21.68062,
+    "changeSinceOneYear": 13.85144,
+    "changeSinceThreeYears": 32.293849,
+    "changeSinceFiveYears": 54.673005,
+    "changeSinceTenYears": 183.969982,
+    "relatedFunds": [
+        {
+            "name": "AMF Aktiefond V\\u00e4rlden",
+            "id": "2300",
+            "changeSinceOneYear": 16.32762
+        },
+        {
+            "name": "Storebrand Global Value A",
+            "id": "2328",
+            "changeSinceOneYear": 6.948732
+        },
+        {
+            "name": "AMF F\\u00f6retagsobligationsfond",
+            "id": "887413",
+            "changeSinceOneYear": 0.98492
+        },
+        {
+            "name": "SPP Emerging Markets SRI",
+            "id": "266309",
+            "changeSinceOneYear": 18.20898
+        },
+        {
+            "name": "Skandia Europa Exponering",
+            "id": "581",
+            "changeSinceOneYear": 17.45794
+        }
+    ],
+    "fundCompany": {
+        "name": "AMF",
+        "homePage": ""
+    },
+    "numberOfOwners": 4699,
+    "autoPortfolio": false,
+    "otherFees": "",
+    "type": "Aktiefond",
+    "subCategory": "Sverige"
+}

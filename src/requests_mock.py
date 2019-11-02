@@ -2,9 +2,9 @@ import json as libjson
 import urllib.parse
 
 
-def get_json_file_content(filename) -> str:
+def get_file_content(filename) -> str:
     with open('test/' + filename, "r") as f:
-        return libjson.load(f)
+        return f.read()
 
 
 class MockResponse:
@@ -22,7 +22,7 @@ class MockResponse:
 def request_post(url, data=None, headers=None) -> MockResponse:
     if url == 'https://www.avanza.se/_api/authentication/sessions/usercredentials':
         content = """{"twoFactorLogin":{"transactionId":"6d772726-eaef-4f6b-9f8f-54cd445cc7c2","method":"TOTP"}}"""
-        r = MockResponse(content, 200)
+        r = MockResponse(content)
         return r
     elif url == 'https://www.avanza.se/_api/authentication/sessions/totp':
         content = """{
@@ -31,7 +31,7 @@ def request_post(url, data=None, headers=None) -> MockResponse:
                         "pushSubscriptionId": "19a1facdf9f1917d3398a994b4a0f5dc9f0e7283",
                         "registrationComplete": true
                      }"""
-        return MockResponse(content, 200, headers={'X-SecurityToken': '40b33e79-a0d6-4432-955e-6d395b6ca0c8'})
+        return MockResponse(content, headers={'X-SecurityToken': '40b33e79-a0d6-4432-955e-6d395b6ca0c8'})
     else:
         return MockResponse(None, 404)
 
@@ -39,8 +39,12 @@ def request_post(url, data=None, headers=None) -> MockResponse:
 def request_get(url, headers=None, data=None) -> MockResponse:
     o = urllib.parse.urlparse(url)
     if o.path == '/_cqbe/fund/list':
-        content = get_json_file_content('fund_list.json')
         start_index = libjson.loads(data)['startIndex']
-        return MockResponse(libjson.dumps(content[str(start_index)]))
+        all_content = get_file_content('fund_list.json')
+        content = libjson.dumps(libjson.loads(all_content)[str(start_index)])
+        return MockResponse(content)
+    elif o.path == '/_mobile/market/fund/1949':
+        content = get_file_content('fund_1949.json')
+        return MockResponse(content)
     else:
         return None
