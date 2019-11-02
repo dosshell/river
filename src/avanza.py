@@ -69,7 +69,6 @@ class Avanza:
         data = {'orderbook_id': orderbook_ids, 'name': names}
         df = pd.DataFrame(data, columns=['orderbook_id', 'name'])
         df_to_sql(df, cursor, 'fund_list')
-        print('a')
 
     def get_instrument(self, instrument_id: str, period: str = 'five_years') -> None:
         pass
