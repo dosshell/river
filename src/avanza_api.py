@@ -135,7 +135,7 @@ def get_account_chart(account_id, security_token, authentication_session):
 def get_fund_list():
     url = 'https://www.avanza.se/_cqbe/fund/list'
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:70.0) Gecko/20100101 Firefox/70.0',
         'Content-Type': 'application/json; charset=UTF-8',
         'X-SecurityToken': '-'
     }
@@ -169,10 +169,21 @@ def get_fund_list():
     return funds
 
 
-def get_fund(orderbookId: int):
-    url = f'''https://www.avanza.se/_mobile/market/fund/{orderbookId}'''
+def get_fund(orderbook_id: int):
+    url = f'''https://www.avanza.se/_mobile/market/fund/{orderbook_id}'''
+    headers = {'User-Agent': 'Avanza API client/1.3.0', 'Content-Type': 'application/json; charset=UTF-8'}
+    response = requests.get(url, headers=headers)
+    if response.ok:
+        return response.json()
+    else:
+        return response.json(object_hook=lambda x: ResponseError(**x))
+
+
+def get_chart(orderbook_id: int, from_date: str, to_date: str):
+    '''max one year'''
+    url = f'''https://www.avanza.se/_cqbe/fund/chart/{orderbook_id}/{from_date}/{to_date}'''
     headers = {
-        'User-Agent': 'Avanza API client/1.3.0',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:70.0) Gecko/20100101 Firefox/70.0',
         'Content-Type': 'application/json; charset=UTF-8'
     }
     response = requests.get(url, headers=headers)

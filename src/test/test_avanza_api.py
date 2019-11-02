@@ -21,3 +21,8 @@ class TestAvanzaApi(unittest.TestCase):
     def test_get_fund(self):
         fund = avanza_api.get_fund(1949)
         self.assertEqual(type(fund), dict)
+
+    @patch('requests.get', new=requests_mock.request_get)
+    def test_get_chart(self):
+        fund = avanza_api.get_chart(1949, '2010-01-01', '2011-01-01')
+        self.assertEqual(type(fund), dict)
