@@ -1,6 +1,7 @@
 import json
 import requests
 from typing import List, Dict
+import datetime
 
 
 class ResponseError:
@@ -180,7 +181,7 @@ def get_fund(orderbook_id: int):
 
 
 def get_chart(orderbook_id: int, from_date: str, to_date: str):
-    '''max one year'''
+    '''max one year for day resolution, can return None values in dataSerie'''
     url = f'''https://www.avanza.se/_cqbe/fund/chart/{orderbook_id}/{from_date}/{to_date}'''
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:70.0) Gecko/20100101 Firefox/70.0',
@@ -191,3 +192,40 @@ def get_chart(orderbook_id: int, from_date: str, to_date: str):
         return response.json()
     else:
         return response.json(object_hook=lambda x: ResponseError(**x))
+
+
+def get_chart_helper(orderbook_id: int, from_date: datetime.date, to_date: datetime.date):
+    '''Handles more than one year with day resolution and does not return None values'''
+
+    meta = get_fund(orderbook_id)
+    meta_from = datetime.datetime.strptime(meta['startDate'], '%Y-%m-%d').date()
+    today = datetime.date.today()
+
+    trimmed_from = max(meta_from, from_date)
+    trimmed_to = min(today, to_date)
+
+    nose_end = from_date.replace(year=trimmed_from.year + 1, month=1, day=1)
+    tail_start = to_date.replace(month=1, day=1)
+
+    merged = {
+        'id': str(orderbook_id),
+        'dataSerie': [],
+        'name': meta['name'],
+        'fromDate': from_date.isoformat(),
+        'toDate': to_date.isoformat()
+    }
+
+    nose = get_chart(orderbook_id, trimmed_from.isoformat(), nose_end.isoformat())
+
+    merged['dataSerie'].extend(nose['dataSerie'])
+
+    for year in range(nose_end.year, tail_start.year):
+        mid = get_chart(orderbook_id, datetime.date(year, 1, 1).isoformat(), datetime.date(year + 1, 1, 1).isoformat())
+        merged['dataSerie'].extend(mid['dataSerie'])
+
+    tail = get_chart(orderbook_id, tail_start.isoformat(), trimmed_to.isoformat())
+    merged['dataSerie'].extend(tail['dataSerie'])
+
+    merged['dataSerie'] = [x for x in merged['dataSerie'] if x['y'] is not None]
+
+    return merged
