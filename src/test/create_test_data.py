@@ -2,6 +2,7 @@ import argparse
 import requests
 import json
 import os
+import datetime
 
 
 def get_test_data_fund_list(pages):
@@ -43,10 +44,24 @@ def get_test_data_fund_list(pages):
     return funds
 
 
-def get_fund(orderbook_id):
+def get_test_data_fund(orderbook_id):
     '''Only support full years for now'''
     url = f'''https://www.avanza.se/_mobile/market/fund/{orderbook_id}'''
     headers = {'User-Agent': 'Avanza API client/1.3.0', 'Content-Type': 'application/json; charset=UTF-8'}
+    response = requests.get(url, headers=headers)
+    if not response.ok:
+        raise ValueError("Connection problems?")
+    return response.json()
+
+
+def get_test_data_fund_chart(orderbook_id, year):
+    from_date = datetime.date(year, 1, 1).isoformat()
+    to_date = datetime.date(year + 1, 1, 1).isoformat()
+    url = f'''https://www.avanza.se/_cqbe/fund/chart/{orderbook_id}/{from_date}/{to_date}'''
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:70.0) Gecko/20100101 Firefox/70.0',
+        'Content-Type': 'application/json; charset=UTF-8'
+    }
     response = requests.get(url, headers=headers)
     if not response.ok:
         raise ValueError("Connection problems?")
@@ -63,9 +78,16 @@ def main(args):
 
     funds = [1949]
     for orderbook_id in funds:
-        fund_data = get_fund(orderbook_id)
+        fund_data = get_test_data_fund(orderbook_id)
         with open(dir_path + f'''/fund_{orderbook_id}.json''', 'w') as f:
             json.dump(fund_data, f)
+
+    years = [2009, 2010, 2011, 2012]
+    for orderbook_id in funds:
+        for year in years:
+            chart_data = get_test_data_fund_chart(orderbook_id, year)
+            with open(dir_path + f'''/fund_chart_{orderbook_id}_{year}.json''', 'w') as f:
+                json.dump(chart_data, f)
 
 
 if __name__ == '__main__':
