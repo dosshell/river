@@ -14,7 +14,7 @@ class TestAvanzaApi(unittest.TestCase):
     @patch('requests.get', new=requests_mock.request_get)
     def test_get_fund_list(self):
         fund_list = avanza_api.get_fund_list()
-        self.assertEqual(len(fund_list), 60)
+        self.assertGreaterEqual(len(fund_list), 80)
         self.assertEqual(fund_list[2]['name'], 'AGCM Asia Growth RC SEK')
         self.assertEqual(fund_list[55]['orderbookId'], 736)
 
