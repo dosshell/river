@@ -43,6 +43,16 @@ def get_test_data_fund_list(pages):
     return funds
 
 
+def get_fund(orderbook_id):
+    '''Only support full years for now'''
+    url = f'''https://www.avanza.se/_mobile/market/fund/{orderbook_id}'''
+    headers = {'User-Agent': 'Avanza API client/1.3.0', 'Content-Type': 'application/json; charset=UTF-8'}
+    response = requests.get(url, headers=headers)
+    if not response.ok:
+        raise ValueError("Connection problems?")
+    return response.json()
+
+
 def main(args):
     dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -50,6 +60,12 @@ def main(args):
     fund_list_data = get_test_data_fund_list(4)
     with open(dir_path + '/fund_list.json', 'w') as f:
         json.dump(fund_list_data, f)
+
+    funds = [1949]
+    for orderbook_id in funds:
+        fund_data = get_fund(orderbook_id)
+        with open(dir_path + f'''/fund_{orderbook_id}.json''', 'w') as f:
+            json.dump(fund_data, f)
 
 
 if __name__ == '__main__':
