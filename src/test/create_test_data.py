@@ -3,6 +3,7 @@ import requests
 import json
 import os
 import datetime
+import apsw
 
 
 def get_test_data_fund_list(pages):
@@ -68,26 +69,48 @@ def get_test_data_fund_chart(orderbook_id, year):
     return response.json()
 
 
+def create_test_db(conn, pages):
+    cursor = conn.cursor()
+
+    cursor.execute('''CREATE TABLE fund_list(
+                orderbook_id INTEGER PRIMARY KEY,
+                name TEXT NOT NULL UNIQUE
+            )''')
+    data = get_test_data_fund_list(pages)
+    a = [item for sublist in data.values() for item in sublist['fundListViews']]
+    values = [(x['orderbookId'], x['name']) for x in a]
+    cursor.executemany('insert into fund_list values (?,?)', values)
+
+
 def main(args):
+    pages = 4
+    funds = [1949]
+    years = [2009, 2010, 2011, 2012]
+
     dir_path = os.path.dirname(os.path.realpath(__file__))
 
     # create/overrite fund_list.json
-    fund_list_data = get_test_data_fund_list(4)
+    fund_list_data = get_test_data_fund_list(pages)
     with open(dir_path + '/fund_list.json', 'w') as f:
         json.dump(fund_list_data, f)
 
-    funds = [1949]
     for orderbook_id in funds:
         fund_data = get_test_data_fund(orderbook_id)
         with open(dir_path + f'''/fund_{orderbook_id}.json''', 'w') as f:
             json.dump(fund_data, f)
 
-    years = [2009, 2010, 2011, 2012]
     for orderbook_id in funds:
         for year in years:
             chart_data = get_test_data_fund_chart(orderbook_id, year)
             with open(dir_path + f'''/fund_chart_{orderbook_id}_{year}.json''', 'w') as f:
                 json.dump(chart_data, f)
+
+    db_path = dir_path + '/test.db'
+    if os.path.isfile(db_path):
+        os.remove(db_path)
+    conn = apsw.Connection(db_path)
+    create_test_db(conn, pages)
+    conn.close()
 
 
 if __name__ == '__main__':
