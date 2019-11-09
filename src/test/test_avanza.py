@@ -41,4 +41,4 @@ class TestAvanza(unittest.TestCase):
         avanza_client = avanza.Avanza()
         avanza_client.fetch()
         fund_list = avanza_client.get_fund_list()
-        self.assertEqual(len(fund_list), 60)
+        self.assertGreaterEqual(len(fund_list), 60)

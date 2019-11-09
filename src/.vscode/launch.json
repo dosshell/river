@@ -5,12 +5,22 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "create test data",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/test/create_test_data.py",
+            "console": "integratedTerminal",
+        },
+        {
             "name": "run river text",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/river.py",
             "console": "integratedTerminal",
-            "args": ["-c", "../settings.json"]
+            "args": [
+                "-c",
+                "../settings.json"
+            ]
         },
         {
             "name": "run river mail",
@@ -18,7 +28,11 @@
             "request": "launch",
             "program": "${workspaceFolder}/river.py",
             "console": "integratedTerminal",
-            "args": ["-c", "../settings.json", "--mail"]
+            "args": [
+                "-c",
+                "../settings.json",
+                "--mail"
+            ]
         }
     ]
 }
