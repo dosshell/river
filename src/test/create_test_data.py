@@ -74,12 +74,13 @@ def create_test_db(conn, pages):
 
     cursor.execute('''CREATE TABLE fund_list(
                 orderbook_id INTEGER PRIMARY KEY,
-                name TEXT NOT NULL UNIQUE
+                name TEXT NOT NULL UNIQUE,
+                start_date TEXT NOT NULL
             )''')
     data = get_test_data_fund_list(pages)
     a = [item for sublist in data.values() for item in sublist['fundListViews']]
-    values = [(x['orderbookId'], x['name']) for x in a]
-    cursor.executemany('insert into fund_list values (?,?)', values)
+    values = [(x['orderbookId'], x['name'], x['startDate']) for x in a]
+    cursor.executemany('insert into fund_list values (?,?,?)', values)
 
 
 def main(args):
