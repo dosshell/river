@@ -88,7 +88,7 @@ def main(args):
     funds = [1949]
     years = [2009, 2010, 2011, 2012]
 
-    dir_path = os.path.dirname(os.path.realpath(__file__))
+    dir_path = os.path.dirname(os.path.realpath(__file__) + '/data')
 
     # create/overrite fund_list.json
     fund_list_data = get_test_data_fund_list(pages)
