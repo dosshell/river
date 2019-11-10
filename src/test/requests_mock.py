@@ -3,7 +3,7 @@ import urllib.parse
 
 
 def get_file_content(filename) -> str:
-    with open('test/' + filename, "r") as f:
+    with open('test/data/' + filename, "r") as f:
         return f.read()
 
 
