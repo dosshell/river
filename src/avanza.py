@@ -5,7 +5,7 @@ import apsw
 import pandas as pd
 
 
-def df_to_sql(df: pd.DataFrame, cursor, table_name: str) -> None:
+def df_to_sql(cursor, table_name: str, df: pd.DataFrame) -> None:
     qs = ','.join(['?'] * len(df.columns))
     cs = ','.join(df.columns.tolist())
     cursor.executemany(f'''insert or ignore into {table_name} ({cs}) values({qs})''', df.values.tolist())
@@ -17,6 +17,14 @@ def sql_to_df(cursor, table_name: str) -> pd.DataFrame:
     data = r.fetchall()
     df = pd.DataFrame.from_records(data, columns=headers)
     return df
+
+
+def tuplelist_to_sql(cursor, table_name, values) -> None:
+    if len(values) < 1:
+        return
+    columns = len(values[0])
+    qs = ','.join(['?'] * columns)
+    cursor.executemany(f'''insert or ignore into {table_name} values ({qs})''', values)
 
 
 class Avanza:
@@ -60,15 +68,13 @@ class Avanza:
         # Create tables if needed
         cursor.execute('''CREATE TABLE IF NOT EXISTS fund_list(
                 orderbook_id INTEGER PRIMARY KEY,
-                name TEXT NOT NULL UNIQUE
+                name TEXT NOT NULL UNIQUE,
+                start_date TEXT NOT NULL
             )''')
         # Update some index table
         fund_list = avanza_api.get_fund_list()
-        orderbook_ids = [int(x['orderbookId']) for x in fund_list]
-        names = [x['name'] for x in fund_list]
-        data = {'orderbook_id': orderbook_ids, 'name': names}
-        df = pd.DataFrame(data, columns=['orderbook_id', 'name'])
-        df_to_sql(df, cursor, 'fund_list')
+        values = [(x['orderbookId'], x['name'], x['startDate']) for x in fund_list]
+        tuplelist_to_sql(cursor, 'fund_list', values)
 
     def get_instrument(self, instrument_id: str, period: str = 'five_years') -> None:
         pass
