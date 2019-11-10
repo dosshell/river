@@ -2,29 +2,8 @@ import logger
 import datetime
 import avanza_api
 import apsw
-import pandas as pd
-
-
-def df_to_sql(cursor, table_name: str, df: pd.DataFrame) -> None:
-    qs = ','.join(['?'] * len(df.columns))
-    cs = ','.join(df.columns.tolist())
-    cursor.executemany(f'''insert or ignore into {table_name} ({cs}) values({qs})''', df.values.tolist())
-
-
-def sql_to_df(cursor, table_name: str) -> pd.DataFrame:
-    r = cursor.execute(f'''select * from {table_name}''')
-    headers = [x[0] for x in r.getdescription()]
-    data = r.fetchall()
-    df = pd.DataFrame.from_records(data, columns=headers)
-    return df
-
-
-def tuplelist_to_sql(cursor, table_name, values) -> None:
-    if len(values) < 1:
-        return
-    columns = len(values[0])
-    qs = ','.join(['?'] * columns)
-    cursor.executemany(f'''insert or ignore into {table_name} values ({qs})''', values)
+import db_utils
+import pandas
 
 
 class Avanza:
@@ -38,6 +17,28 @@ class Avanza:
             self.cache_db = apsw.Connection(':memory:')
         else:
             self.cache_db = cache_db
+
+    def _get_transactions(self, transaction_type: str) -> dict:
+        if not self.is_authed:
+            return None
+        response = avanza_api.get_transactions(transaction_type, self.security_token, self.authentication_session)
+        if response is avanza_api.ResponseError:
+            return None
+        return response
+
+    def _get_overview(self) -> dict:
+        if (not self.is_authed):
+            return None
+        response = avanza_api.get_overview(self.security_token, self.authentication_session)
+        if response is avanza_api.ResponseError:
+            return None
+        return response
+
+    def _get_account_overview(self, account_id: str) -> dict:
+        response = avanza_api.get_account_overview(account_id, self.security_token, self.authentication_session)
+        if response is avanza_api.ResponseError:
+            return None
+        return response
 
     def login(self, username: str, password: str, totp_code: str) -> bool:
         auth_response = avanza_api.authenticate(username, password)
@@ -62,30 +63,12 @@ class Avanza:
         self.security_token = totp_response.security_token
         return True
 
-    def fetch(self):
+    def fetch(self) -> None:
         cursor = self.cache_db.cursor()
-
-        # Create tables if needed
-        cursor.execute('''CREATE TABLE IF NOT EXISTS fund_list(
-                orderbook_id INTEGER PRIMARY KEY,
-                name TEXT NOT NULL UNIQUE,
-                start_date TEXT NOT NULL
-            )''')
-        # Update some index table
+        db_utils.create_tables(cursor)
         fund_list = avanza_api.get_fund_list()
         values = [(x['orderbookId'], x['name'], x['startDate']) for x in fund_list]
-        tuplelist_to_sql(cursor, 'fund_list', values)
-
-    def get_instrument(self, instrument_id: str, period: str = 'five_years') -> None:
-        pass
-
-    def _get_transactions(self, transaction_type: str) -> dict:
-        if not self.is_authed:
-            return None
-        response = avanza_api.get_transactions(transaction_type, self.security_token, self.authentication_session)
-        if response is avanza_api.ResponseError:
-            return None
-        return response
+        db_utils.tuplelist_to_sql(cursor, 'fund_list', values)
 
     def get_account_chart(self):
         if not self.is_authed:
@@ -104,20 +87,6 @@ class Avanza:
         dates = [datetime.datetime.strptime(x['date'], '%Y-%m-%d') for x in data['dataSeries']]
         values = [x['value'] for x in data['dataSeries']]
         return (dates, values)
-
-    def _get_overview(self) -> dict:
-        if (not self.is_authed):
-            return None
-        response = avanza_api.get_overview(self.security_token, self.authentication_session)
-        if response is avanza_api.ResponseError:
-            return None
-        return response
-
-    def _get_account_overview(self, account_id: str) -> dict:
-        response = avanza_api.get_account_overview(account_id, self.security_token, self.authentication_session)
-        if response is avanza_api.ResponseError:
-            return None
-        return response
 
     def get_current_investment(self) -> int:
         if not self.is_authed:
@@ -155,5 +124,5 @@ class Avanza:
                 balance = balance + account['ownCapital']
         return int(balance)
 
-    def get_fund_list(self):
-        return sql_to_df(self.cache_db.cursor(), 'fund_list')
+    def get_fund_list(self) -> pandas.DataFrame:
+        return db_utils.sql_to_df(self.cache_db.cursor(), 'fund_list')

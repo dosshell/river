@@ -4,6 +4,7 @@ import json
 import os
 import datetime
 import apsw
+import db_utils_link as db_utils
 
 
 def get_test_data_fund_list(pages):
@@ -71,12 +72,7 @@ def get_test_data_fund_chart(orderbook_id, year):
 
 def create_test_db(conn, pages):
     cursor = conn.cursor()
-
-    cursor.execute('''CREATE TABLE fund_list(
-                orderbook_id INTEGER PRIMARY KEY,
-                name TEXT NOT NULL UNIQUE,
-                start_date TEXT NOT NULL
-            )''')
+    db_utils.create_tables(cursor)
     data = get_test_data_fund_list(pages)
     a = [item for sublist in data.values() for item in sublist['fundListViews']]
     values = [(x['orderbookId'], x['name'], x['startDate']) for x in a]
