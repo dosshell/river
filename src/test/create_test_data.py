@@ -4,7 +4,7 @@ import json
 import os
 import datetime
 import apsw
-import db_utils_link as db_utils
+from db_utils_link import db_utils
 
 
 def get_test_data_fund_list(pages):
@@ -70,13 +70,22 @@ def get_test_data_fund_chart(orderbook_id, year):
     return response.json()
 
 
-def create_test_db(conn, pages):
+def create_test_db(conn, pages, funds, years):
     cursor = conn.cursor()
     db_utils.create_tables(cursor)
+
+    # Populate with real data from created json files
     data = get_test_data_fund_list(pages)
     a = [item for sublist in data.values() for item in sublist['fundListViews']]
     values = [(x['orderbookId'], x['name'], x['startDate']) for x in a]
     cursor.executemany('insert into fund_list values (?,?,?)', values)
+    for fund in funds:
+        for year in years:
+            d = get_test_data_fund_chart(fund, year)
+            rows = [(int(d['id']),
+                     datetime.datetime.utcfromtimestamp(x['x'] / 1000).isoformat(),
+                     x['y']) for x in d['dataSerie']]
+            cursor.executemany('insert into fund_chart values(?,?,?)', rows)
 
 
 def main(args):
@@ -84,7 +93,7 @@ def main(args):
     funds = [1949]
     years = [2009, 2010, 2011, 2012]
 
-    dir_path = os.path.dirname(os.path.realpath(__file__) + '/data')
+    dir_path = os.path.dirname(os.path.realpath(__file__)) + '/data'
 
     # create/overrite fund_list.json
     fund_list_data = get_test_data_fund_list(pages)
@@ -106,7 +115,7 @@ def main(args):
     if os.path.isfile(db_path):
         os.remove(db_path)
     conn = apsw.Connection(db_path)
-    create_test_db(conn, pages)
+    create_test_db(conn, pages, funds, years)
     conn.close()
 
 

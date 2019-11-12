@@ -30,3 +30,8 @@ def create_tables(cursor) -> None:
                         name TEXT NOT NULL UNIQUE,
                         start_date TEXT NOT NULL
                       )''')
+    cursor.execute('''CREATE TABLE IF NOT EXISTS fund_chart(
+                        orderbook_id INTEGER NOT NULL,
+                        x TEXT NOT NULL,
+                        y REAL
+                      )''')
