@@ -180,7 +180,7 @@ def get_fund(orderbook_id: int):
         return response.json(object_hook=lambda x: ResponseError(**x))
 
 
-def get_chart(orderbook_id: int, from_date: str, to_date: str):
+def get_fund_chart(orderbook_id: int, from_date: str, to_date: str):
     '''max one year for day resolution, can return None values in dataSerie'''
     url = f'''https://www.avanza.se/_cqbe/fund/chart/{orderbook_id}/{from_date}/{to_date}'''
     headers = {
@@ -194,8 +194,9 @@ def get_chart(orderbook_id: int, from_date: str, to_date: str):
         return response.json(object_hook=lambda x: ResponseError(**x))
 
 
-def get_chart_helper(orderbook_id: int, from_date: datetime.date, to_date: datetime.date):
+def get_fund_chart_helper(orderbook_id: int, from_date: datetime.date, to_date: datetime.date):
     '''Handles more than one year with day resolution and does not return None values'''
+    '''Returns the none named super procent like factor'''
 
     meta = get_fund(orderbook_id)
     meta_from = datetime.datetime.strptime(meta['startDate'], '%Y-%m-%d').date()
@@ -215,17 +216,31 @@ def get_chart_helper(orderbook_id: int, from_date: datetime.date, to_date: datet
         'toDate': to_date.isoformat()
     }
 
-    nose = get_chart(orderbook_id, trimmed_from.isoformat(), nose_end.isoformat())
-
+    nose = get_fund_chart(orderbook_id, trimmed_from.isoformat(), nose_end.isoformat())
+    nose['dataSerie'] = [x for x in nose['dataSerie'] if x['y'] is not None]
+    for n in nose['dataSerie']:
+        n['y'] = n['y'] / 100 + 1
     merged['dataSerie'].extend(nose['dataSerie'])
 
+    proc_fix = 1.0
+    if len(merged['dataSerie']) >= 1:
+        proc_fix = merged['dataSerie'][-1]['y']
+
     for year in range(nose_end.year, tail_start.year):
-        mid = get_chart(orderbook_id, datetime.date(year, 1, 1).isoformat(), datetime.date(year + 1, 1, 1).isoformat())
+        mid = get_fund_chart(orderbook_id,
+                             datetime.date(year, 1, 1).isoformat(),
+                             datetime.date(year + 1, 1, 1).isoformat())
+        mid['dataSerie'] = [x for x in mid['dataSerie'] if x['y'] is not None]
+        for n in mid['dataSerie']:
+            n['y'] = proc_fix * (n['y'] / 100 + 1)
         merged['dataSerie'].extend(mid['dataSerie'])
+        if len(merged['dataSerie']) >= 1:
+            proc_fix = merged['dataSerie'][-1]['y']
 
-    tail = get_chart(orderbook_id, tail_start.isoformat(), trimmed_to.isoformat())
+    tail = get_fund_chart(orderbook_id, tail_start.isoformat(), trimmed_to.isoformat())
+    tail['dataSerie'] = [x for x in tail['dataSerie'] if x['y'] is not None]
+    for n in tail['dataSerie']:
+        n['y'] = proc_fix * (n['y'] / 100 + 1)
     merged['dataSerie'].extend(tail['dataSerie'])
-
-    merged['dataSerie'] = [x for x in merged['dataSerie'] if x['y'] is not None]
 
     return merged
