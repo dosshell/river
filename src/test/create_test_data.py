@@ -7,7 +7,7 @@ import apsw
 from db_utils_link import db_utils
 
 
-def get_test_data_fund_list(pages):
+def get_test_data_fund_list(fund_filter):
     url = 'https://www.avanza.se/_cqbe/fund/list'
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:70.0) Gecko/20100101 Firefox/70.0',
@@ -32,18 +32,22 @@ def get_test_data_fund_list(pages):
     }
     response = requests.get(url, headers=headers, data=json.dumps(data))
     if not response.ok:
-        return None
-    funds_per_page = 20
-    number_of_funds = pages * funds_per_page
-    funds = {}
-    for start_index in range(0, number_of_funds, funds_per_page):
+        raise ValueError("Connection problems?")
+    data = response.json()
+    number_of_funds = data['totalNoFunds']
+
+    data['totalNoFunds'] = len(fund_filter)
+    data['fundListViews'] = []
+
+    for start_index in range(0, number_of_funds, 20):
         data['startIndex'] = start_index
         response = requests.get(url, headers=headers, data=json.dumps(data))
         if not response.ok:
             raise ValueError("Connection problems?")
-        funds[start_index] = response.json()
-        funds[start_index]['totalNoFunds'] = number_of_funds
-    return funds
+        r = response.json()
+        new_funds = [x for x in r['fundListViews'] if x['orderbookId'] in fund_filter]
+        data['fundListViews'].extend(new_funds)
+    return data
 
 
 def get_test_data_fund(orderbook_id):
@@ -70,52 +74,54 @@ def get_test_data_fund_chart(orderbook_id, year):
     return response.json()
 
 
-def create_test_db(conn, pages, funds, years):
-    cursor = conn.cursor()
-    db_utils.create_tables(cursor)
+def create_test_db(conn, fund_list_data, chart_datas):
+    with conn:
+        cursor = conn.cursor()
+        db_utils.create_tables(cursor)
 
-    # Populate with real data from created json files
-    data = get_test_data_fund_list(pages)
-    a = [item for sublist in data.values() for item in sublist['fundListViews']]
-    values = [(x['orderbookId'], x['name'], x['startDate']) for x in a]
-    cursor.executemany('insert into fund_list values (?,?,?)', values)
-    for fund in funds:
-        for year in years:
-            d = get_test_data_fund_chart(fund, year)
-            rows = [(int(d['id']),
-                     datetime.datetime.utcfromtimestamp(x['x'] / 1000).isoformat(),
-                     x['y']) for x in d['dataSerie']]
-            cursor.executemany('insert into fund_chart values(?,?,?)', rows)
+        # Populate with real data from created json files
+        values = [(x['orderbookId'], x['name'], x['startDate']) for x in fund_list_data['fundListViews']]
+        cursor.executemany('insert into fund_list values (?,?,?)', values)
+        for fund, data in chart_datas.items():
+            pfix = 1.0
+            for d in data:
+                rows = [(fund, datetime.datetime.utcfromtimestamp(x['x'] / 1000).isoformat(), (x['y'] / 100 + 1) * pfix)
+                        for x in d['dataSerie'] if x['y'] is not None]
+                pfix = rows[-1][2]
+                cursor.executemany('insert into fund_chart values(?,?,?)', rows)
 
 
 def main(args):
-    pages = 4
-    funds = [1949]
-    years = [2009, 2010, 2011, 2012]
+    funds = [944976, 377804]
 
     dir_path = os.path.dirname(os.path.realpath(__file__)) + '/data'
 
     # create/overrite fund_list.json
-    fund_list_data = get_test_data_fund_list(pages)
+    fund_list_data = get_test_data_fund_list(funds)
     with open(dir_path + '/fund_list.json', 'w') as f:
         json.dump(fund_list_data, f)
 
+    fund_chart_datas = {}
     for orderbook_id in funds:
         fund_data = get_test_data_fund(orderbook_id)
         with open(dir_path + f'''/fund_{orderbook_id}.json''', 'w') as f:
             json.dump(fund_data, f)
 
-    for orderbook_id in funds:
-        for year in years:
+        from_year = int(fund_data['startDate'].split('-')[0])
+        to_year = datetime.date.today().year + 1
+        fund_chart_datas[orderbook_id] = []
+        for year in range(from_year, to_year):
             chart_data = get_test_data_fund_chart(orderbook_id, year)
+            fund_chart_datas[orderbook_id].append(chart_data)
             with open(dir_path + f'''/fund_chart_{orderbook_id}_{year}.json''', 'w') as f:
                 json.dump(chart_data, f)
 
+    # populate with test data
     db_path = dir_path + '/test.db'
     if os.path.isfile(db_path):
         os.remove(db_path)
     conn = apsw.Connection(db_path)
-    create_test_db(conn, pages, funds, years)
+    create_test_db(conn, fund_list_data, fund_chart_datas)
     conn.close()
 
 

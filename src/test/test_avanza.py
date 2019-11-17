@@ -38,7 +38,8 @@ class TestAvanza(unittest.TestCase):
 
     @patch('requests.get', new=test.requests_mock.request_get)
     def test_fetch(self):
-        avanza_client = avanza.Avanza()
+        test_db = apsw.Connection('test/data/test.db')
+        avanza_client = avanza.Avanza(test_db)
         avanza_client.fetch()
         fund_list = avanza_client.get_fund_list()
-        self.assertGreaterEqual(len(fund_list), 60)
+        self.assertGreaterEqual(len(fund_list), 2)

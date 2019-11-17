@@ -1,5 +1,5 @@
 import logger
-import datetime
+import datetime as dt
 import avanza_api
 import apsw
 import db_utils
@@ -64,11 +64,33 @@ class Avanza:
         return True
 
     def fetch(self) -> None:
+        # fetch fund_list
+        logger.log("Fetch fund list")
         cursor = self.cache_db.cursor()
         db_utils.create_tables(cursor)
-        fund_list = avanza_api.get_fund_list()
-        values = [(x['orderbookId'], x['name'], x['startDate']) for x in fund_list]
-        db_utils.tuplelist_to_sql(cursor, 'fund_list', values)
+        # new_fund_list = avanza_api.get_fund_list()
+        # new_fund_list_values = [(x['orderbookId'], x['name'], x['startDate']) for x in new_fund_list]
+        # db_utils.tuplelist_to_sql(cursor, 'fund_list', new_fund_list_values)
+
+        logger.log("Fetch chart list")
+        # fetch fund_chart
+        all_fund_list = db_utils.sql_to_df(cursor, 'fund_list')
+        total_rows = len(all_fund_list.index)
+        for index, row in all_fund_list.iterrows():
+            logger.log(f'''Fetching: {index}/{total_rows} ({row['orderbook_id']}) "{row['name']}""''')
+            orderbook_id = row['orderbook_id']
+            last_update_str = cursor.execute(
+                f'''SELECT MAX(x) as last_update from fund_chart WHERE orderbook_id={orderbook_id}''').fetchone()[0]
+            start_date = dt.datetime.strptime(row['start_date'], "%Y-%m-%d").date()
+            if last_update_str is None:
+                from_date = start_date
+            else:
+                from_date = dt.datetime.strptime(last_update_str, '%Y-%m-%dT%H:%M:%S').date()
+            d = avanza_api.get_fund_chart_helper(orderbook_id, from_date, dt.date.today(), start_date=start_date)
+            new_fund_chart_values = [(orderbook_id, dt.datetime.utcfromtimestamp(v['x'] / 1000).isoformat(), v['y'])
+                                     for v in d['dataSerie']]
+            db_utils.tuplelist_to_sql(cursor, 'fund_chart', new_fund_chart_values)
+        logger.log("fetch done")
 
     def get_account_chart(self):
         if not self.is_authed:
@@ -84,7 +106,7 @@ class Avanza:
         if data is avanza_api.ResponseError:
             return None
 
-        dates = [datetime.datetime.strptime(x['date'], '%Y-%m-%d') for x in data['dataSeries']]
+        dates = [dt.datetime.strptime(x['date'], '%Y-%m-%d') for x in data['dataSeries']]
         values = [x['value'] for x in data['dataSeries']]
         return (dates, values)
 

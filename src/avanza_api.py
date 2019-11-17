@@ -194,24 +194,27 @@ def get_fund_chart(orderbook_id: int, from_date: str, to_date: str):
         return response.json(object_hook=lambda x: ResponseError(**x))
 
 
-def get_fund_chart_helper(orderbook_id: int, from_date: datetime.date, to_date: datetime.date):
+def get_fund_chart_helper(orderbook_id: int, from_date: datetime.date, to_date: datetime.date, start_date=None):
     '''Handles more than one year with day resolution and does not return None values'''
     '''Returns the none named super procent like factor'''
 
-    meta = get_fund(orderbook_id)
-    meta_from = datetime.datetime.strptime(meta['startDate'], '%Y-%m-%d').date()
+    if start_date is None:
+        meta = get_fund(orderbook_id)
+        meta_from = datetime.datetime.strptime(meta['startDate'], '%Y-%m-%d').date()
+    else:
+        meta_from = start_date
+
     today = datetime.date.today()
 
     trimmed_from = max(meta_from, from_date)
     trimmed_to = min(today, to_date)
 
-    nose_end = from_date.replace(year=trimmed_from.year + 1, month=1, day=1)
-    tail_start = to_date.replace(month=1, day=1)
+    nose_end = min(from_date.replace(year=trimmed_from.year + 1, month=1, day=1), trimmed_to)
+    tail_start = max(to_date.replace(month=1, day=1), trimmed_to)
 
     merged = {
         'id': str(orderbook_id),
         'dataSerie': [],
-        'name': meta['name'],
         'fromDate': from_date.isoformat(),
         'toDate': to_date.isoformat()
     }
@@ -237,10 +240,11 @@ def get_fund_chart_helper(orderbook_id: int, from_date: datetime.date, to_date: 
         if len(merged['dataSerie']) >= 1:
             proc_fix = merged['dataSerie'][-1]['y']
 
-    tail = get_fund_chart(orderbook_id, tail_start.isoformat(), trimmed_to.isoformat())
-    tail['dataSerie'] = [x for x in tail['dataSerie'] if x['y'] is not None]
-    for n in tail['dataSerie']:
-        n['y'] = proc_fix * (n['y'] / 100 + 1)
-    merged['dataSerie'].extend(tail['dataSerie'])
+    if tail_start < trimmed_to:
+        tail = get_fund_chart(orderbook_id, tail_start.isoformat(), trimmed_to.isoformat())
+        tail['dataSerie'] = [x for x in tail['dataSerie'] if x['y'] is not None]
+        for n in tail['dataSerie']:
+            n['y'] = proc_fix * (n['y'] / 100 + 1)
+        merged['dataSerie'].extend(tail['dataSerie'])
 
     return merged

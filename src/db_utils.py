@@ -21,7 +21,9 @@ def tuplelist_to_sql(cursor, table_name: str, values: pandas.DataFrame) -> None:
         return
     columns = len(values[0])
     qs = ','.join(['?'] * columns)
+    cursor.execute("BEGIN TRANSACTION")
     cursor.executemany(f'''insert or ignore into {table_name} values ({qs})''', values)
+    cursor.execute("COMMIT")
 
 
 def create_tables(cursor) -> None:
@@ -33,5 +35,7 @@ def create_tables(cursor) -> None:
     cursor.execute('''CREATE TABLE IF NOT EXISTS fund_chart(
                         orderbook_id INTEGER NOT NULL,
                         x TEXT NOT NULL,
-                        y REAL
+                        y REAL,
+                        PRIMARY KEY(orderbook_id, x),
+                        FOREIGN KEY(orderbook_id) REFERENCES fund_list(orderbook_id)
                       )''')

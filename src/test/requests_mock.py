@@ -39,12 +39,11 @@ def request_post(url, data=None, headers=None) -> MockResponse:
 def request_get(url, headers=None, data=None) -> MockResponse:
     o = urllib.parse.urlparse(url)
     if o.path == '/_cqbe/fund/list':
-        start_index = libjson.loads(data)['startIndex']
-        all_content = get_file_content('fund_list.json')
-        content = libjson.dumps(libjson.loads(all_content)[str(start_index)])
+        content = get_file_content('fund_list.json')
         return MockResponse(content)
-    elif o.path == '/_mobile/market/fund/1949':
-        content = get_file_content('fund_1949.json')
+    elif o.path.startswith('/_mobile/market/fund/'):
+        id = o.path.split('/')[4]
+        content = get_file_content(f'''fund_{id}.json''')
         return MockResponse(content)
     elif o.path.startswith('/_cqbe/fund/chart/'):
         orderbook_id = o.path.split('/')[4].split('-')[0]
