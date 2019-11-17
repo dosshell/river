@@ -51,4 +51,4 @@ def request_get(url, headers=None, data=None) -> MockResponse:
         content = get_file_content(f'''fund_chart_{orderbook_id}_{year}.json''')
         return MockResponse(content)
     else:
-        return None
+        raise ValueError("Unknown url")

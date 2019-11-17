@@ -20,25 +20,18 @@ class Avanza:
 
     def _get_transactions(self, transaction_type: str) -> dict:
         if not self.is_authed:
-            return None
-        response = avanza_api.get_transactions(transaction_type, self.security_token, self.authentication_session)
-        if response is avanza_api.ResponseError:
-            return None
-        return response
+            raise ValueError("Not authenticated")
+        return avanza_api.get_transactions(transaction_type, self.security_token, self.authentication_session)
 
     def _get_overview(self) -> dict:
-        if (not self.is_authed):
-            return None
-        response = avanza_api.get_overview(self.security_token, self.authentication_session)
-        if response is avanza_api.ResponseError:
-            return None
-        return response
+        if not self.is_authed:
+            raise ValueError("Not authenticated")
+        return avanza_api.get_overview(self.security_token, self.authentication_session)
 
     def _get_account_overview(self, account_id: str) -> dict:
-        response = avanza_api.get_account_overview(account_id, self.security_token, self.authentication_session)
-        if response is avanza_api.ResponseError:
-            return None
-        return response
+        if not self.is_authed:
+            raise ValueError("Not authenticated")
+        return avanza_api.get_account_overview(account_id, self.security_token, self.authentication_session)
 
     def login(self, username: str, password: str, totp_code: str) -> bool:
         auth_response = avanza_api.authenticate(username, password)
@@ -94,7 +87,7 @@ class Avanza:
 
     def get_account_chart(self):
         if not self.is_authed:
-            return None
+            raise ValueError("Not authenticated")
 
         overview = self._get_overview()
         good_accounts = [x['accountId'] for x in overview['accounts'] if x['accountType'] == 'Investeringssparkonto']
@@ -103,8 +96,6 @@ class Avanza:
         account_id = good_accounts[0]
 
         data = avanza_api.get_account_chart(account_id, self.security_token, self.authentication_session)
-        if data is avanza_api.ResponseError:
-            return None
 
         dates = [dt.datetime.strptime(x['date'], '%Y-%m-%d') for x in data['dataSeries']]
         values = [x['value'] for x in data['dataSeries']]
@@ -112,7 +103,7 @@ class Avanza:
 
     def get_current_investment(self) -> int:
         if not self.is_authed:
-            return None
+            raise ValueError("Not authenticated")
         overview = self._get_overview()
         depositables = []
         for account in overview['accounts']:
@@ -128,7 +119,7 @@ class Avanza:
 
     def get_value_in_the_mattress(self) -> int:
         if not self.is_authed:
-            return None
+            raise ValueError("Not authenticated")
         overview = self._get_overview()
         sum = 0
         for account in overview['accounts']:
@@ -138,7 +129,7 @@ class Avanza:
 
     def get_own_capital(self) -> int:
         if not self.is_authed:
-            return None
+            raise ValueError("Not authenticated")
         overview = self._get_overview()
         balance = 0
         for account in overview['accounts']:
