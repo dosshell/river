@@ -47,14 +47,23 @@ def authenticate_decoder(dct):
         return dct
 
 
+def raise_error(response_error: ResponseError):
+    raise ValueError(
+        f'''{response_error.time}: "{response_error.message}"; "{response_error.status_code}";
+        "{str(response_error.additional)}";
+        "{str(response_error.errors)}"'''
+    )
+
+
 def authenticate(username: str, password: str) -> TwoFactorAuthenticationResponse:
     url = 'https://www.avanza.se/_api/authentication/sessions/usercredentials'
     headers = {'User-Agent': 'Avanza API client/1.3.0', 'Content-Type': 'application/json;charset=UTF-8'}
     data = {'maxInactiveMinutes': 240, 'password': password, 'username': username}
     response = requests.post(url, data=json.dumps(data), headers=headers)
-    if not response.ok:
-        return response.json(object_hook=lambda x: ResponseError(**x))
-    return response.json(object_hook=authenticate_decoder)
+    if response.ok:
+        return response.json(object_hook=authenticate_decoder)
+    else:
+        raise_error(response.json(object_hook=lambda x: ResponseError(**x)))
 
 
 def verify_totp(totp_code: str, transaction_id: str) -> TotpAuthentication:
@@ -70,7 +79,7 @@ def verify_totp(totp_code: str, transaction_id: str) -> TotpAuthentication:
         return response.json(
             object_hook=lambda x: TotpAuthentication(securityToken=response.headers['X-SecurityToken'], **x))
     else:
-        return response.json(object_hook=lambda x: ResponseError(**x))
+        raise_error(response.json(object_hook=lambda x: ResponseError(**x)))
 
 
 def get_transactions(transaction_type: str, security_token: str, authentication_session: str):
@@ -82,10 +91,10 @@ def get_transactions(transaction_type: str, security_token: str, authentication_
         'X-AuthenticationSession': authentication_session
     }
     response = requests.get(url, headers=headers)
-    if (response.ok):
+    if response.ok:
         return response.json()
     else:
-        return response.json(object_hook=lambda x: ResponseError(**x))
+        raise_error(response.json(object_hook=lambda x: ResponseError(**x)))
 
 
 def get_account_overview(account_id: str, security_token: str, authentication_session: str) -> dict:
@@ -97,10 +106,10 @@ def get_account_overview(account_id: str, security_token: str, authentication_se
         'X-AuthenticationSession': authentication_session
     }
     response = requests.get(url, headers=headers)
-    if (response.ok):
+    if response.ok:
         return response.json()
     else:
-        return response.json(object_hook=lambda x: ResponseError(**x))
+        raise_error(response.json(object_hook=lambda x: ResponseError(**x)))
 
 
 def get_overview(security_token, authentication_session) -> dict:
@@ -115,7 +124,7 @@ def get_overview(security_token, authentication_session) -> dict:
     if response.ok:
         return response.json()
     else:
-        return response.json(object_hook=lambda x: ResponseError(**x))
+        raise_error(response.json(object_hook=lambda x: ResponseError(**x)))
 
 
 def get_account_chart(account_id, security_token, authentication_session):
@@ -130,7 +139,7 @@ def get_account_chart(account_id, security_token, authentication_session):
     if response.ok:
         return response.json()
     else:
-        return response.json(object_hook=lambda x: ResponseError(**x))
+        raise_error(response.json(object_hook=lambda x: ResponseError(**x)))
 
 
 def get_fund_list():
@@ -157,17 +166,19 @@ def get_fund_list():
         "companyFilter": []
     }
     response = requests.get(url, headers=headers, data=json.dumps(data))
-    if not response.ok:
-        return None
-    number_of_funds = response.json()['totalNoFunds']
-    funds = []
-    for start_index in range(0, number_of_funds, 20):
-        data['startIndex'] = start_index
-        response = requests.get(url, headers=headers, data=json.dumps(data))
-        if not response.ok:
-            return None
-        funds.extend(response.json()['fundListViews'])
-    return funds
+    if response.ok:
+        number_of_funds = response.json()['totalNoFunds']
+        funds = []
+        for start_index in range(0, number_of_funds, 20):
+            data['startIndex'] = start_index
+            response = requests.get(url, headers=headers, data=json.dumps(data))
+            if response.ok:
+                funds.extend(response.json()['fundListViews'])
+            else:
+                raise_error(response.json(object_hook=lambda x: ResponseError(**x)))
+        return funds
+    else:
+        raise_error(response.json(object_hook=lambda x: ResponseError(**x)))
 
 
 def get_fund(orderbook_id: int):
@@ -177,7 +188,7 @@ def get_fund(orderbook_id: int):
     if response.ok:
         return response.json()
     else:
-        return response.json(object_hook=lambda x: ResponseError(**x))
+        raise_error(response.json(object_hook=lambda x: ResponseError(**x)))
 
 
 def get_fund_chart(orderbook_id: int, from_date: str, to_date: str):
@@ -191,7 +202,7 @@ def get_fund_chart(orderbook_id: int, from_date: str, to_date: str):
     if response.ok:
         return response.json()
     else:
-        return response.json(object_hook=lambda x: ResponseError(**x))
+        raise_error(response.json(object_hook=lambda x: ResponseError(**x)))
 
 
 def get_fund_chart_helper(orderbook_id: int, from_date: datetime.date, to_date: datetime.date, start_date=None):
