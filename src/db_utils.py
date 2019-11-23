@@ -3,8 +3,9 @@ import pandas
 
 
 def sql_to_df(cursor, table_name: str) -> pandas.DataFrame:
+    rh = cursor.execute(f'''PRAGMA table_info({table_name})''').fetchall()
+    headers = [x[1] for x in rh]
     r = cursor.execute(f'''select * from {table_name}''')
-    headers = [x[0] for x in r.getdescription()]
     data = r.fetchall()
     df = pandas.DataFrame.from_records(data, columns=headers)
     return df

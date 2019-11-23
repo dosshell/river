@@ -48,7 +48,7 @@ def generate_report_email(res: Result) -> str:
     """
 
     a = mailer.Attachment
-    a.bin = plotter.example_plot(res.chart_data['dates'], res.chart_data['value'])
+    a.bin = plotter.example_plot(res.chart_data['date'], res.chart_data['value'])
     a.type = 'image'
     a.ext = 'png'
     a.cid = '1'
