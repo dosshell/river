@@ -9,5 +9,6 @@ docker run \
 	--name river-once \
 	-e TZ='Europe/Stockholm' \
 	-v $PWD/settings.json:/app/settings.json \
+	-v $PWD/cache.db:/app/cache.db \
 	registry.gitlab.com/dosshell/river:latest \
 	"$@"

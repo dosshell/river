@@ -9,4 +9,4 @@ COPY ./dep /dep
 RUN python -m pip install pipenv
 RUN python -m pipenv sync
 
-ENTRYPOINT ["pipenv", "run", "python", "-u", "river.py", "--daemon"]
+ENTRYPOINT ["pipenv", "run", "python", "-u", "river.py"]
