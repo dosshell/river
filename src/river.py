@@ -48,7 +48,7 @@ def generate_report_email(res: Result) -> str:
     """
 
     a = mailer.Attachment
-    a.bin = plotter.example_plot(res.chart_dates, res.chart_values)
+    a.bin = plotter.example_plot(res.chart_data['date'], res.chart_data['value'])
     a.type = 'image'
     a.ext = 'png'
     a.cid = '1'
@@ -85,8 +85,9 @@ def job_wrapper(cfg: dict) -> None:
 
 def job(cfg: dict) -> bool:
     # Fetch all raw data
-    avanza_client = avanza.Avanza()
-    avanza_client.fetch()
+    avanza_client = avanza.Avanza('cache.db')
+    if cfg['fetch']:
+        avanza_client.fetch()
     totp_code = totp.totp(cfg['AvanzaPrivateKey'])
     if not avanza_client.login(cfg['AvanzaUsername'], cfg['AvanzaPassword'], totp_code):
         logger.error("Could not sign in")
@@ -100,7 +101,7 @@ def job(cfg: dict) -> bool:
     res.value_on_the_table = res.own_capital - res.value_in_the_mattress
     res.profit = res.own_capital - res.current_investment - res.value_in_the_mattress
 
-    (res.chart_dates, res.chart_values) = avanza_client.get_account_chart()
+    res.chart_data = avanza_client.get_account_chart()
 
     # Update db
     pass
@@ -137,6 +138,7 @@ def main(args: argparse.Namespace) -> None:
     logger.log("Unleashing the daemon of River Tam")
     cfg = settings.read_settings(args.config)
     cfg['mail'] = args.mail
+    cfg['fetch'] = args.fetch
 
     if not args.daemon:
         job_wrapper(cfg)
@@ -152,8 +154,8 @@ if __name__ == '__main__':
         description="River Tam. You’ve got tools, something sharp. Don’t be scared. I’m right here.")
     parser.add_argument('-d', '--daemon', action='store_true', help="Unleash the Daemon")
     parser.add_argument('-c', '--config', default='settings.json', help="Path to config file")
-    parser.add_argument('--test', default=False, action='store_true', help="Use test data")
     parser.add_argument('--mail', action='store_true', help="Send report with email")
+    parser.add_argument('--fetch', default=False, action='store_true', help="Update market data")
 
     args = parser.parse_args()
     logger.log("called with " + str(args))

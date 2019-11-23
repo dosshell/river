@@ -19,27 +19,24 @@ After you created a config file you can run River locally or in a container. Ple
 
 ### Run locally
 ```
-cd src/
-python3 -m pip install pipenv
-python3 -m pipenv sync
-python3 -m pipenv run python daemon.py --now -c ../settings.json
+./scripts/run_local.sh -c ../settings.json
 ```
 
 
-### Build and run container
+### Run as container
 ```
-docker build -t registry.gitlab.com/dosshell/river:latest .
-docker run --name river -v $PWD/settings.json:/app/settings.json --restart=unless-stopped -d registry.gitlab.com/dosshell/river:latest
+scripts/run_container.sh
 ```
 
-you could also add `--rm` and `--now` to run it once:
+
+### Start River as a docker daemon
 ```
-docker run --rm --name river -v $PWD/settings.json:/app/settings.json registry.gitlab.com/dosshell/river:latest --now
+./scripts/update_container.sh
 ```
 
 
 ### Update River
-To update the container of a already running image you can use the following script:
+To update the container of an already running docker daemon container:
 ```
 ./scripts/update_server.sh
 ```
@@ -77,3 +74,4 @@ And then use the run daemon container code.
 ```
 docker save --output test.tar <imageid>
 ```
+
