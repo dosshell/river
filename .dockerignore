@@ -1,4 +1,5 @@
 src/test
 src/data.db
 src/settings.json
+src/cache.db
 settings.json
