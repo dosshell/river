@@ -48,7 +48,7 @@ def generate_report_email(res: Result) -> str:
     """
 
     a = mailer.Attachment
-    a.bin = plotter.example_plot(res.chart_dates, res.chart_values)
+    a.bin = plotter.example_plot(res.chart_data['dates'], res.chart_data['value'])
     a.type = 'image'
     a.ext = 'png'
     a.cid = '1'
@@ -100,7 +100,7 @@ def job(cfg: dict) -> bool:
     res.value_on_the_table = res.own_capital - res.value_in_the_mattress
     res.profit = res.own_capital - res.current_investment - res.value_in_the_mattress
 
-    (res.chart_dates, res.chart_values) = avanza_client.get_account_chart()
+    res.chart_data = avanza_client.get_account_chart()
 
     # Update db
     pass

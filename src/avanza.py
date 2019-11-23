@@ -3,7 +3,7 @@ import datetime as dt
 import avanza_api
 import apsw
 import db_utils
-import pandas
+import pandas as pd
 
 
 class Avanza:
@@ -85,7 +85,7 @@ class Avanza:
             db_utils.tuplelist_to_sql(cursor, 'fund_chart', new_fund_chart_values)
         logger.log("fetch done")
 
-    def get_account_chart(self):
+    def get_account_chart(self) -> pd.DataFrame:
         if not self.is_authed:
             raise ValueError("Not authenticated")
 
@@ -97,9 +97,9 @@ class Avanza:
 
         data = avanza_api.get_account_chart(account_id, self.security_token, self.authentication_session)
 
-        dates = [dt.datetime.strptime(x['date'], '%Y-%m-%d') for x in data['dataSeries']]
-        values = [x['value'] for x in data['dataSeries']]
-        return (dates, values)
+        data = [(dt.datetime.strptime(x['date'], '%Y-%m-%d'), x['value']) for x in data['dataSeries']]
+        df = pd.DataFrame.from_records(data, columns=['date', 'value'])
+        return df
 
     def get_current_investment(self) -> int:
         if not self.is_authed:
@@ -137,5 +137,5 @@ class Avanza:
                 balance = balance + account['ownCapital']
         return int(balance)
 
-    def get_fund_list(self) -> pandas.DataFrame:
+    def get_fund_list(self) -> pd.DataFrame:
         return db_utils.sql_to_df(self.cache_db.cursor(), 'fund_list')
