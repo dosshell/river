@@ -85,8 +85,7 @@ def job_wrapper(cfg: dict) -> None:
 
 def job(cfg: dict) -> bool:
     # Fetch all raw data
-    avanza_client = avanza.Avanza()
-    avanza_client.fetch()
+    avanza_client = avanza.Avanza('cache.db')
     totp_code = totp.totp(cfg['AvanzaPrivateKey'])
     if not avanza_client.login(cfg['AvanzaUsername'], cfg['AvanzaPassword'], totp_code):
         logger.error("Could not sign in")

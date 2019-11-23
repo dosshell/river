@@ -7,16 +7,13 @@ import pandas as pd
 
 
 class Avanza:
-    def __init__(self, cache_db: apsw.Connection = None):
+    def __init__(self, cache_db: str = ':memory:'):
         self.is_authed: bool = False
         self.customer_id: str = ''
         self.authentication_session: str = ''
         self.push_subscription_id: str = ''
         self.security_token: str = ''
-        if cache_db is None:
-            self.cache_db = apsw.Connection(':memory:')
-        else:
-            self.cache_db = cache_db
+        self.cache_db = apsw.Connection(cache_db)
 
     def _get_transactions(self, transaction_type: str) -> dict:
         if not self.is_authed:
