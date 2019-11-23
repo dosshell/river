@@ -154,7 +154,6 @@ if __name__ == '__main__':
         description="River Tam. You’ve got tools, something sharp. Don’t be scared. I’m right here.")
     parser.add_argument('-d', '--daemon', action='store_true', help="Unleash the Daemon")
     parser.add_argument('-c', '--config', default='settings.json', help="Path to config file")
-    parser.add_argument('--test', default=False, action='store_true', help="Use test data")
     parser.add_argument('--mail', action='store_true', help="Send report with email")
     parser.add_argument('--fetch', default=False, action='store_true', help="Update market data")
 
