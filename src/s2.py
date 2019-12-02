@@ -52,7 +52,7 @@ def cv_kf(t: np.ndarray, z: np.ndarray, gain: float):
     return x
 
 
-def estimate_error(t, z, gain, step):
+def cv_kf_estimate(t, z, gain, step):
     """
     t: np.ndarray[np.datetime64[us]]
     z: np.ndarray[float64]
@@ -63,30 +63,27 @@ def estimate_error(t, z, gain, step):
     f_step = step.astype('timedelta64[s]') / res
     x = cv_kf(t, z, gain)
     F = np.array([[1, f_step], [0, 1]])
-    diff = []
 
     last_valid_date = (t - step)[-1]
     to_index = closest_index_before_or_equal(t, last_valid_date)
     if to_index is None:
         raise ValueError("Whoppsan hoppsan där! Har du för konstig data under fötterna?")
 
-    diff = np.zeros(to_index + 1)
+    x0_hat = np.zeros(to_index + 1)
+    z_target = np.zeros(to_index + 1)
     for k in range(0, to_index + 1):
         x_hat = F @ x[k]
-        x0_hat = float(x_hat[0])
+        x0_hat[k] = float(x_hat[0])
 
         # find stepped z value by interpolation
         target_date = t[k] + step
         t1_index = closest_index_before_or_equal(t, target_date)
         if t[t1_index] == target_date:
-            z_target = z[t1_index]
+            z_target[k] = z[t1_index]
         else:
-            z_target = interpolate(t[t1_index], t[t1_index + 1], z[t1_index], z[t1_index + 1], target_date)
+            z_target[k] = interpolate(t[t1_index], t[t1_index + 1], z[t1_index], z[t1_index + 1], target_date)
 
-        # store diff
-        diff[k] = z_target - x0_hat
-
-    return diff
+    return z_target, x0_hat
 
 
 def closest_index_before_or_equal(t, target):

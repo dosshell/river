@@ -16,11 +16,12 @@ class TestS2(unittest.TestCase):
         self.assertAlmostEqual(float(x_g10[-1, 1]), 1.0)
         self.assertAlmostEqual(float(x_g05[-1, 1]), 1.0)
 
-    def test_estimate(self):
+    def test_cv_kf_estimate(self):
         N = 100
         t = pd.date_range('2018-01-01', periods=N, freq='D').values
         z = np.array(range(0, N))
-        h = s2.estimate_error(t, z, 0.5, np.timedelta64(1, 'D'))
+        z, x = s2.cv_kf_estimate(t, z, 0.5, np.timedelta64(1, 'D'))
+        h = z - x
         rmse = np.sqrt((h**2).mean())
         self.assertAlmostEqual(float(rmse), 0.1264885296216132)
         self.assertEqual(float(h[0]), 1.0)
