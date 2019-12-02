@@ -1,5 +1,6 @@
 import numpy as np
 from numpy.linalg import inv
+from typing import Callable
 
 
 def cv_kf(t: np.ndarray, z: np.ndarray, gain: float):
@@ -108,3 +109,17 @@ def interpolate(t1, t2, y1, y2, t_target):
     g = (t_target - t1).astype('timedelta64[s]') / res
     y_target = y1 + g * k
     return y_target
+
+
+def globopt(F: Callable[[float], float], start: float, stop: float, steps: int, iterations: int = 1):
+    x = np.linspace(start, stop, steps)
+    y = np.zeros(steps)
+    for i in range(steps):
+        y[i] = F(x[i])
+    im = np.argmin(y)
+    if iterations == 1:
+        return x[im]
+    else:
+        x1 = x[max(im - 1, 0)]
+        x2 = x[min(im + 1, steps - 1)]
+        return globopt(F, x1, x2, steps, iterations - 1)
