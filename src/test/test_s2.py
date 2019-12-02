@@ -35,3 +35,28 @@ class TestS2(unittest.TestCase):
         y2 = 20
         y_target = s2.interpolate(t1, t2, y1, y2, t_target)
         self.assertAlmostEqual(y_target, 15)
+
+    def test_globopt(self):
+        def F1(x):
+            return x**2 + 2 * x - 3
+        minx11 = s2.globopt(F1, -5.0, 5.0, 11)
+        self.assertAlmostEqual(minx11, -1.0)
+        minx12 = s2.globopt(F1, 2, 10, 100)
+        self.assertEqual(minx12, 2)
+
+        def F2(x):
+            return 1 / 7 * x**2 + 5 / 3 * x + 15 / 2
+        minx21 = s2.globopt(F2, -10.0, 10.0, 1001)
+        self.assertAlmostEqual(minx21, -5.84)
+
+        minx22 = s2.globopt(F2, -10.0, 10.0, 11, 4)
+        self.assertAlmostEqual(minx22, -5.84)
+
+        minx23 = s2.globopt(F2, -10.0, 10.0, 11, 11)
+        self.assertAlmostEqual(minx23, -35 / 6)
+
+        minx24 = s2.globopt(F2, 10.0, 100.0, 11, 11)
+        self.assertEqual(minx24, 10.0)
+
+        minx25 = s2.globopt(F2, -100, -10, 11, 11)
+        self.assertEqual(minx25, -10)
