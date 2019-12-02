@@ -3,6 +3,15 @@ variables:
   LC_ALL: C.UTF-8
   LANG: C.UTF-8
 
+crlf_test:
+  image: alpine:3.10
+  only:
+    - merge_requests
+  script:
+    - apk add --no-cache bash file
+    - chmod +x ./ci/test_crlf.sh
+    - ./ci/test_crlf.sh
+
 flake8:
   image: python:3.6-slim-stretch
   only:
