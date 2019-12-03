@@ -17,18 +17,16 @@ flake8:
   only:
     - merge_requests
   script:
-    - python -m pip install flake8
-    - python -m flake8 --config=./src/.flake8
+    - chmod +x ./ci/test_flake8.sh
+    - ./ci/test_flake8.sh
 
 unit_tests:
   image: python:3.6-slim-stretch
   only:
     - merge_requests
   script:
-    - cd ./src
-    - python -m pip install pipenv
-    - python -m pipenv sync
-    - python -m pipenv run python -m unittest
+    - chmod +x ./ci/test_unit_tests.sh
+    - ./ci/test_unit_tests.sh
 
 docker_test:
   image:
