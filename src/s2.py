@@ -58,6 +58,11 @@ def cv_kf_estimate(t, z, gain, step):
     z: np.ndarray[float64]
     gain: (1-0)
     step: numpy.timedelta64
+
+    output:
+    t_bar: np.ndarray[np.datetime64[D]] - timestamp of made target pridection
+    z_hat: np.ndarray[float64] - predicted z measurement
+    z_bar: np.ndarray[float64] - interpolated z measurement
     """
     res = np.timedelta64(1, 'D')
     f_step = step.astype('timedelta64[s]') / res
@@ -69,21 +74,26 @@ def cv_kf_estimate(t, z, gain, step):
     if to_index is None:
         raise ValueError("Whoppsan hoppsan där! Har du för konstig data under fötterna?")
 
-    x0_hat = np.zeros(to_index + 1)
-    z_target = np.zeros(to_index + 1)
+    t_bar = np.zeros(to_index + 1, dtype='datetime64[D]')
+    z_hat = np.zeros(to_index + 1)
+    z_bar = np.zeros(to_index + 1)
+
     for k in range(0, to_index + 1):
+        # predict with cvkf model
         x_hat = F @ x[k]
-        x0_hat[k] = float(x_hat[0])
+        z_hat[k] = float(x_hat[0])
+
+        target_date = t[k] + step
+        t_bar[k] = target_date
 
         # find stepped z value by interpolation
-        target_date = t[k] + step
         t1_index = closest_index_before_or_equal(t, target_date)
         if t[t1_index] == target_date:
-            z_target[k] = z[t1_index]
+            z_bar[k] = z[t1_index]
         else:
-            z_target[k] = interpolate(t[t1_index], t[t1_index + 1], z[t1_index], z[t1_index + 1], target_date)
+            z_bar[k] = interpolate(t[t1_index], t[t1_index + 1], z[t1_index], z[t1_index + 1], target_date)
 
-    return z_target, x0_hat
+    return t_bar, z_hat, z_bar
 
 
 def closest_index_before_or_equal(t, target):
