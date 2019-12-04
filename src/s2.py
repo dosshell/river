@@ -49,7 +49,7 @@ def cv_kf(t: np.ndarray, z: np.ndarray, gain: float):
             x[k] = x[k] + K @ y[k]
             P[k] = (np.eye(2) - K @ H) @ P[k]
 
-    return x
+    return x[:, :, 0]
 
 
 def cv_kf_estimate(t, z, gain, step):

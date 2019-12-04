@@ -12,9 +12,9 @@ class TestS2(unittest.TestCase):
         x_g00 = s2.cv_kf(t, z, 0.01)
         x_g10 = s2.cv_kf(t, z, 0.99)
         x_g05 = s2.cv_kf(t, z, 0.5)
-        self.assertAlmostEqual(float(x_g00[-1, 1]), 1.0)
-        self.assertAlmostEqual(float(x_g10[-1, 1]), 1.0)
-        self.assertAlmostEqual(float(x_g05[-1, 1]), 1.0)
+        self.assertAlmostEqual(x_g00[-1, 1], 1.0)
+        self.assertAlmostEqual(x_g10[-1, 1], 1.0)
+        self.assertAlmostEqual(x_g05[-1, 1], 1.0)
 
     def test_cv_kf_estimate(self):
         N = 100
