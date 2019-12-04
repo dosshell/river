@@ -61,3 +61,15 @@ class TestS2(unittest.TestCase):
 
         minx25 = s2.globopt(F2, -100, -10, 11, 11)
         self.assertEqual(minx25, -10)
+
+    def test_cv_kf_tune_log(self):
+        np.random.seed(0)
+        N = 200
+        t = pd.date_range('2018-01-01', periods=N, freq='D').values
+        y = np.power(1.05, range(len(t)))
+        v = 1 + np.random.normal(0, 0.1, N)
+        z = np.multiply(y, v)
+        step = np.timedelta64(7, 'D')
+
+        min_g, _ = s2.cv_kf_tune_log(t, z, step)
+        self.assertAlmostEqual(min_g, 0.00145633)

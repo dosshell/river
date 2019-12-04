@@ -130,3 +130,20 @@ def globopt(F: Callable[[float], float], start: float, stop: float, steps: int, 
         x1 = x[max(im - 1, 0)]
         x2 = x[min(im + 1, steps - 1)]
         return globopt(F, x1, x2, steps, iterations - 1)
+
+
+def cv_kf_tune_log(t, z, step):
+    def E(x):
+        t_bar, z_hat, z_bar = cv_kf_estimate(t, np.log(z), x, step)
+        z_hat = np.exp(z_hat)
+        z_bar = np.exp(z_bar)
+        e = (z_hat - z_bar) / z_bar
+        me = np.abs(e).mean()
+        return me
+
+    min_g = globopt(E, 0.001, 0.999, 10, 4)
+    t_bar, z_hat, z_bar = cv_kf_estimate(t, np.log(z), min_g, step)
+    z_hat = np.exp(z_hat)
+    z_bar = np.exp(z_bar)
+    e = (z_hat - z_bar) / z_bar
+    return min_g, e

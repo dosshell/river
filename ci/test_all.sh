@@ -5,7 +5,6 @@ cd $MY_PATH
 
 ./test_crlf.sh
 crlf=$?
-echo $crlf
 
 ./test_flake8.sh
 flake=$?
