@@ -12,7 +12,7 @@ rope = "*"
 requests = "*"
 schedule = "*"
 matplotlib = "*"
-apsw = {path = "./../dep/apsw-3.29.0.post1-cp36-cp36m-linux_x86_64.whl"}
+apsw = {path = "./../dep/apsw-3.29.0.post1-cp36-cp36m-linux_x86_64.whl", platform_system="Linux"}
 pandas = "*"
 
 [requires]
