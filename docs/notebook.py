@@ -1,3 +1,4 @@
+# flake8: noqa
 # %% paths
 import sys
 from pathlib import Path
@@ -32,6 +33,5 @@ fig.add_trace(go.Scatter(x=t, y=z, mode='lines'))
 fig.add_trace(go.Scatter(x=t, y=x0, mode='lines'))
 fig.update_layout(yaxis_type="log")
 fig.show()
-
 
 # %%
