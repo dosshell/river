@@ -55,7 +55,7 @@ def cv_kf(t: 'np.ndarray[np.datetime64]', z: 'np.ndarray[np.float64]', gain: flo
 
 class Estimation(NamedTuple):
     t_bar: 'np.ndarray[np.datetime64]'  # timestamp of made target pridection
-    z_har: 'np.ndarray[np.float64]'  # predicted z measurement
+    z_hat: 'np.ndarray[np.float64]'  # predicted z measurement
     z_bar: 'np.ndarray[np.float64]'  # interpolated z measurement
 
 
@@ -68,7 +68,7 @@ def cv_kf_estimate(t: 'np.ndarray[np.datetime64]', z: 'np.ndarray[np.float64]', 
     :param z: measurements
     :param gain: value ebtween (0 - 1)
     :param step: timestep into the future to predict
-    :return: Estimation class
+    :return: Estimation(t_bar, z_hat, z_bar)
     """
     res = np.timedelta64(1, 'D')
     f_step = step.astype('timedelta64[s]') / res
@@ -136,12 +136,7 @@ def globopt(F: Callable[[float], float], start: float, stop: float, steps: int, 
         return globopt(F, x1, x2, steps, iterations - 1)
 
 
-class Tuning(NamedTuple):
-    tuned_value: float
-    errors: 'np.ndarray[np.float64]'
-
-
-def cv_kf_tune_log(t: 'np.ndarray[np.datetime64]', z: 'np.ndarray[np.float64]', step: np.timedelta64) -> Tuning:
+def cv_kf_tune_log(t: 'np.ndarray[np.datetime64]', z: 'np.ndarray[np.float64]', step: np.timedelta64) -> float:
     def E(x):
         t_bar, z_hat, z_bar = cv_kf_estimate(t, np.log(z), x, step)
         z_hat = np.exp(z_hat)
@@ -151,13 +146,28 @@ def cv_kf_tune_log(t: 'np.ndarray[np.datetime64]', z: 'np.ndarray[np.float64]', 
         return me
 
     min_g = globopt(E, 0.001, 0.999, 10, 4)
-    t_bar, z_hat, z_bar = cv_kf_estimate(t, np.log(z), min_g, step)
-    z_hat = np.exp(z_hat)
-    z_bar = np.exp(z_bar)
-    e = (z_hat - z_bar) / z_bar
-    return Tuning(min_g, e)
+    return min_g
 
 
 class Prediction(NamedTuple):
     predicted_value: float
     historic_errors: 'np.ndarray[np.float64]'
+
+
+def predict(t: 'np.ndarray[np.datetime64]', z: 'np.ndarray[np.float64]', step: np.timedelta64) -> Prediction:
+    mask = z > 0
+    if mask.sum() < len(z):
+        raise ValueError('Invalid measurements')
+
+    g = cv_kf_tune_log(t, z, step)
+    est = cv_kf_estimate(t, np.log(z), g, step)
+    z_bar = np.exp(est.z_bar)
+    z_hat = np.exp(est.z_hat)
+    e = (z_hat - z_bar) / z_bar
+
+    t_n = np.append(t, t[-1] + step)
+    z_n = np.append(z, np.nan)
+    x = cv_kf(t_n, z_n, g)
+    predicted_value = x[-1, 0]
+
+    return Prediction(predicted_value, e)
