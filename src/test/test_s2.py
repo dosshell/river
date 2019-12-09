@@ -71,5 +71,16 @@ class TestS2(unittest.TestCase):
         z = np.multiply(y, v)
         step = np.timedelta64(7, 'D')
 
-        min_g, _ = s2.cv_kf_tune_log(t, z, step)
+        min_g = s2.cv_kf_tune_log(t, z, step)
         self.assertAlmostEqual(min_g, 0.00145633)
+
+    def test_predict(self):
+        with self.assertRaises(ValueError):
+            t = pd.date_range('2018-01-01', periods=10, freq='D').values
+            s2.predict(t, np.array(range(0, 10)), np.timedelta64(1, 'D'))
+
+        N = 10
+        t = pd.date_range('2018-01-01', periods=N, freq='D').values
+        z = np.array(range(1, N + 1))
+        a = s2.predict(t, z, np.timedelta64(1, 'D'))
+        self.assertAlmostEqual(a.predicted_value, N + 1, places=1)

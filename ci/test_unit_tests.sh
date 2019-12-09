@@ -8,5 +8,5 @@ which pipenv
 if [ $? -eq 1 ]; then
     python3 -m pip install pipenv
 fi
-python3 -m pipenv sync
+python3 -m pipenv sync --dev --keep-outdated --bare
 python3 -m pipenv run python -m unittest

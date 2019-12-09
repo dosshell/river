@@ -1,13 +1,14 @@
 import numpy as np
 from numpy.linalg import inv
 from typing import Callable
+from typing import NamedTuple
 
 
-def cv_kf(t: np.ndarray, z: np.ndarray, gain: float):
+def cv_kf(t: 'np.ndarray[np.datetime64]', z: 'np.ndarray[np.float64]', gain: float) -> 'np.ndarray[np.float64]':
     """
-    t: np.ndarray[np.datetime64[us]]
-    z: np.ndarray[float64]
-    gain: (1-0)
+    :param t: timestamps
+    :param z: measurements
+    :param gain: gain value between (1-0)
     """
     if t.ndim != 1 or z.ndim != 1:
         raise ValueError("Dimensions of t and v is wrong")
@@ -42,7 +43,7 @@ def cv_kf(t: np.ndarray, z: np.ndarray, gain: float):
         x[k] = F @ x[k - 1]
         P[k] = F @ P[k - 1] @ F.transpose() + Q
 
-        if not np.isnan(y[k]):
+        if not np.isnan(z[k]):
             y[k] = z[k] - H @ x[k]
             S = H @ P[k] @ H.transpose() + R
             K = P[k] @ H.transpose() @ inv(S)
@@ -52,17 +53,22 @@ def cv_kf(t: np.ndarray, z: np.ndarray, gain: float):
     return x[:, :, 0]
 
 
-def cv_kf_estimate(t, z, gain, step):
-    """
-    t: np.ndarray[np.datetime64[us]]
-    z: np.ndarray[float64]
-    gain: (1-0)
-    step: numpy.timedelta64
+class Estimation(NamedTuple):
+    t_bar: 'np.ndarray[np.datetime64]'  # timestamp of made target pridection
+    z_hat: 'np.ndarray[np.float64]'  # predicted z measurement
+    z_bar: 'np.ndarray[np.float64]'  # interpolated z measurement
 
-    output:
-    t_bar: np.ndarray[np.datetime64[D]] - timestamp of made target pridection
-    z_hat: np.ndarray[float64] - predicted z measurement
-    z_bar: np.ndarray[float64] - interpolated z measurement
+
+def cv_kf_estimate(t: 'np.ndarray[np.datetime64]', z: 'np.ndarray[np.float64]', gain: float,
+                   step: np.timedelta64) -> Estimation:
+    """
+    Make historical estimations
+
+    :param t: timestamps
+    :param z: measurements
+    :param gain: value ebtween (0 - 1)
+    :param step: timestep into the future to predict
+    :return: Estimation(t_bar, z_hat, z_bar)
     """
     res = np.timedelta64(1, 'D')
     f_step = step.astype('timedelta64[s]') / res
@@ -93,23 +99,21 @@ def cv_kf_estimate(t, z, gain, step):
         else:
             z_bar[k] = interpolate(t[t1_index], t[t1_index + 1], z[t1_index], z[t1_index + 1], target_date)
 
-    return t_bar, z_hat, z_bar
+    return Estimation(t_bar, z_hat, z_bar)
 
 
-def closest_index_before_or_equal(t, target):
-    """
-    t: numpy.DatetimeIndex
-    target: numpy.Datetime
-    """
-    # assume last index
-    i = None
+def closest_index_before_or_equal(t: 'np.ndarray[np.datetime64]', target: 'np.ndarray[np.datetime64]') -> int:
+    '''
+    returns -1 if target is before all values in t
+    '''
+    i = -1
     for n in range(0, len(t)):
         if t[n] <= target:
             i = n
     return i
 
 
-def interpolate(t1, t2, y1, y2, t_target):
+def interpolate(t1: np.datetime64, t2: np.datetime64, y1: float, y2: float, t_target: np.datetime64) -> float:
     res = np.timedelta64(1, 'D')
     dt = (t2 - t1).astype('timedelta64[s]') / res
     k = (y2 - y1) / dt
@@ -118,7 +122,7 @@ def interpolate(t1, t2, y1, y2, t_target):
     return y_target
 
 
-def globopt(F: Callable[[float], float], start: float, stop: float, steps: int, iterations: int = 1):
+def globopt(F: Callable[[float], float], start: float, stop: float, steps: int, iterations: int = 1) -> float:
     x = np.linspace(start, stop, steps)
     y = np.zeros(steps)
     for i in range(steps):
@@ -132,7 +136,7 @@ def globopt(F: Callable[[float], float], start: float, stop: float, steps: int, 
         return globopt(F, x1, x2, steps, iterations - 1)
 
 
-def cv_kf_tune_log(t, z, step):
+def cv_kf_tune_log(t: 'np.ndarray[np.datetime64]', z: 'np.ndarray[np.float64]', step: np.timedelta64) -> float:
     def E(x):
         t_bar, z_hat, z_bar = cv_kf_estimate(t, np.log(z), x, step)
         z_hat = np.exp(z_hat)
@@ -142,8 +146,28 @@ def cv_kf_tune_log(t, z, step):
         return me
 
     min_g = globopt(E, 0.001, 0.999, 10, 4)
-    t_bar, z_hat, z_bar = cv_kf_estimate(t, np.log(z), min_g, step)
-    z_hat = np.exp(z_hat)
-    z_bar = np.exp(z_bar)
+    return min_g
+
+
+class Prediction(NamedTuple):
+    predicted_value: float
+    historic_errors: 'np.ndarray[np.float64]'
+
+
+def predict(t: 'np.ndarray[np.datetime64]', z: 'np.ndarray[np.float64]', step: np.timedelta64) -> Prediction:
+    mask = z > 0
+    if mask.sum() < len(z):
+        raise ValueError('Invalid measurements')
+
+    g = cv_kf_tune_log(t, z, step)
+    est = cv_kf_estimate(t, np.log(z), g, step)
+    z_bar = np.exp(est.z_bar)
+    z_hat = np.exp(est.z_hat)
     e = (z_hat - z_bar) / z_bar
-    return min_g, e
+
+    t_n = np.append(t, t[-1] + step)
+    z_n = np.append(z, np.nan)
+    x = cv_kf(t_n, z_n, g)
+    predicted_value = x[-1, 0]
+
+    return Prediction(predicted_value, e)
