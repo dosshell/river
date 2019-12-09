@@ -43,7 +43,7 @@ def cv_kf(t: 'np.ndarray[np.datetime64]', z: 'np.ndarray[np.float64]', gain: flo
         x[k] = F @ x[k - 1]
         P[k] = F @ P[k - 1] @ F.transpose() + Q
 
-        if not np.isnan(y[k]):
+        if not np.isnan(z[k]):
             y[k] = z[k] - H @ x[k]
             S = H @ P[k] @ H.transpose() + R
             K = P[k] @ H.transpose() @ inv(S)
