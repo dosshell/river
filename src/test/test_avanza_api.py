@@ -2,7 +2,6 @@ import unittest
 from unittest.mock import patch
 import avanza_api
 import test.requests_mock
-import datetime
 
 
 class TestAvanzaApi(unittest.TestCase):
@@ -26,10 +25,5 @@ class TestAvanzaApi(unittest.TestCase):
 
     @patch('requests.get', new=test.requests_mock.request_get)
     def test_get_chart(self):
-        fund = avanza_api.get_fund_chart(377804, '2012-01-01', '2020-01-01')
+        fund = avanza_api.get_fund_chart(377804, '2012-10-20', '2013-10-15')
         self.assertEqual(type(fund), dict)
-
-    @patch('requests.get', new=test.requests_mock.request_get)
-    def test_get_fund_chart_helper(self):
-        fund = avanza_api.get_fund_chart_helper(377804, datetime.date(2012, 1, 1), datetime.date(2020, 1, 1))
-        self.assertGreaterEqual(len(fund['dataSerie']), 500)
