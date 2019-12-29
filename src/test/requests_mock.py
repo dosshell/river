@@ -46,9 +46,10 @@ def request_get(url, headers=None, data=None) -> MockResponse:
         content = get_file_content(f'''fund_{id}.json''')
         return MockResponse(content)
     elif o.path.startswith('/_cqbe/fund/chart/'):
-        orderbook_id = o.path.split('/')[4].split('-')[0]
-        year = o.path.split('/')[5].split('-')[0]
-        content = get_file_content(f'''fund_chart_{orderbook_id}_{year}.json''')
+        orderbook_id = o.path.split('/')[4]
+        from_date = o.path.split('/')[5].replace('-', '')
+        to_date = o.path.split('/')[6].replace('-', '')
+        content = get_file_content(f'''fund_chart_{orderbook_id}_{from_date}_{to_date}.json''')
         return MockResponse(content)
     else:
         raise ValueError("Unknown url")
