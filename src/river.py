@@ -87,7 +87,7 @@ def job(cfg: dict) -> bool:
     # Fetch all raw data
     avanza_client = avanza.Avanza('cache.db')
     if cfg['fetch']:
-        avanza_client.fetch()
+        avanza_client.fetch_all()
     totp_code = totp.totp(cfg['AvanzaPrivateKey'])
     if not avanza_client.login(cfg['AvanzaUsername'], cfg['AvanzaPassword'], totp_code):
         logger.error("Could not sign in")
@@ -102,9 +102,6 @@ def job(cfg: dict) -> bool:
     res.profit = res.own_capital - res.current_investment - res.value_in_the_mattress
 
     res.chart_data = avanza_client.get_account_chart()
-
-    # Update db
-    pass
 
     # Process all indicators
     pass

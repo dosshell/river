@@ -82,6 +82,17 @@ class TestAvanza(unittest.TestCase):
         a4 = c.execute('select * from fund_chart where orderbook_id=377804').fetchall()
         self.assertEqual(a, a4)
 
+    @freeze_time("2019-12-28")
+    @patch('requests.get', new=test.requests_mock.request_get)
+    def test_fetch_all(self):
+        avanza_client = avanza.Avanza()
+        avanza_client.fetch_all()
+        c = avanza_client.cache_db.cursor()
+        funds = c.execute("SELECT * FROM fund_list LIMIT 2").fetchall()
+        self.assertEqual(len(funds), 2)
+        charts = c.execute("SELECT * FROM fund_chart LIMIT 10").fetchall()
+        self.assertEqual(len(charts), 10)
+
     @patch('requests.get', new=test.requests_mock.request_get)
     def test_append_fund_chart(self):
         with open('test/data/fund_chart_377804_20121020_20131015.json') as f:

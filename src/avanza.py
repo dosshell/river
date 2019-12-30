@@ -57,8 +57,11 @@ class Avanza:
         self.security_token = totp_response.security_token
         return True
 
-    def fetch_all() -> None:
-        pass
+    def fetch_all(self) -> None:
+        self.fetch_fund_list()
+        fund_list = self.get_fund_list()
+        for _, n in fund_list.iterrows():
+            self.fetch_instrument_chart(n.orderbook_id)
 
     def fetch_fund_list(self) -> None:
         logger.log("Fetch fund list")
