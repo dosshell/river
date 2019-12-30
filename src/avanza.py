@@ -127,6 +127,9 @@ class Avanza:
 
         db_utils.tuplelist_to_sql(self.cache_db, 'fund_chart', fund_chart_values)
 
+    def get_fund_chart(self, orderbook_id: int) -> pd.DataFrame:
+        return db_utils.sql_to_df(self.cache_db, 'fund_chart')
+
     def get_account_chart(self) -> pd.DataFrame:
         if not self.is_authed:
             raise ValueError("Not authenticated")

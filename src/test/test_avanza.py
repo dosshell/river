@@ -93,6 +93,15 @@ class TestAvanza(unittest.TestCase):
         charts = c.execute("SELECT * FROM fund_chart LIMIT 10").fetchall()
         self.assertEqual(len(charts), 10)
 
+    @freeze_time("2019-12-28")
+    @patch('requests.get', new=test.requests_mock.request_get)
+    def test_get_fund_chart(self):
+        avanza_client = avanza.Avanza()
+        avanza_client.fetch_all()
+        chart = avanza_client.get_fund_chart(377804)
+        self.assertGreater(len(chart), 0)
+        self.assertIs(type(chart), pd.DataFrame)
+
     @patch('requests.get', new=test.requests_mock.request_get)
     def test_append_fund_chart(self):
         with open('test/data/fund_chart_377804_20121020_20131015.json') as f:
