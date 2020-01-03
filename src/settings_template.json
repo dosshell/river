@@ -4,5 +4,6 @@
     "RiverGmailPassword": "Gmail password for River",
     "AvanzaUsername": "Your Avanza username",
     "AvanzaPassword": "Your Avanza password",
-    "AvanzaPrivateKey": "Your private TOTP key"
+    "AvanzaPrivateKey": "Your private TOTP key",
+    "Blacklist": []
 }

@@ -1,0 +1,18 @@
+fond 32 Barings ASEAN Frontiers A USD Inc
+start datum 2008-08-01, men det finns data från och 1998-12-31
+
+
+fond 35 Fidelity Pacific A-Dis-USD
+start datum 1994-01-10, men har bara data från och med 1998-12-31
+
+fond 38 SEB Asien Småbolag ex Japan C SEK - Lux
+start datum 1998-04-22, men har bara data från och med 1998-12-31
+
+fond 334871 Allianz US High Yield AM USD
+max visar inga datum alls, börjar från och med 2010-08-02
+
+334871
+891316
+891313
+1689
+2482

@@ -33,6 +33,19 @@
                 "../settings.json",
                 "--mail"
             ]
+        },
+        {
+            "name": "run river fetch",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/river.py",
+            "console": "integratedTerminal",
+            "args": [
+                "-c",
+                "../settings.json",
+                "--fetch",
+                "--clearcache"
+            ]
         }
     ]
 }

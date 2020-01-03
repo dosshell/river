@@ -7,6 +7,7 @@ import pandas as pd
 import numpy as np
 from dateutil import tz
 from dateutil.parser import isoparse
+from typing import List
 
 
 class Avanza:
@@ -57,17 +58,26 @@ class Avanza:
         self.security_token = totp_response.security_token
         return True
 
-    def fetch_all(self) -> None:
-        self.fetch_fund_list()
+    def fetch_all(self, blacklist: List[int] = []) -> None:
+        self.fetch_fund_list(blacklist)
         fund_list = self.get_fund_list()
-        for _, n in fund_list.iterrows():
-            self.fetch_instrument_chart(n.orderbook_id)
+        for i, n in fund_list.iterrows():
+            logger.log(f"""fetching ({i+1}/{len(fund_list)}) {n['orderbook_id']} {n['name']}""")
+            self.fetch_instrument_chart(n['orderbook_id'])
 
-    def fetch_fund_list(self) -> None:
+    def fetch_fund_list(self, blacklist: List[int] = []) -> None:
         logger.log("Fetch fund list")
-        new_fund_list = avanza_api.get_fund_list()
-        new_fund_list_values = [(x['orderbookId'], x['name'], x['startDate']) for x in new_fund_list]
-        db_utils.tuplelist_to_sql(self.cache_db, 'fund_list', new_fund_list_values)
+        fund_list = avanza_api.get_fund_list()
+        filtred_fund_list = [x for x in fund_list if x['orderbookId'] not in blacklist]
+
+        # fix broken avanza start_date
+        for i in range(len(filtred_fund_list)):
+            logger.log(f'''Fetch start_date ({i+1}/{len(filtred_fund_list)}) for '''
+                       f'''{filtred_fund_list[i]['orderbookId']} "{filtred_fund_list[i]['name']}"''')
+            filtred_fund_list[i]['startDate'] = _aquire_start_date(filtred_fund_list[i]['orderbookId']).isoformat()
+
+        fund_list_values = [(x['orderbookId'], x['name'], x['startDate']) for x in filtred_fund_list]
+        db_utils.tuplelist_to_sql(self.cache_db, 'fund_list', fund_list_values)
 
     def fetch_instrument_chart(self, orderbook_id: int) -> None:
         # get latest update date
@@ -75,19 +85,22 @@ class Avanza:
         f = c.execute("SELECT * from fund_list WHERE orderbook_id=?", [orderbook_id]).fetchone()
         if f is None:
             raise ValueError(f"""Unknown orderbook_id: {orderbook_id}""")
-        start_date = f[2]
         last_update = c.execute("SELECT * from fund_chart WHERE orderbook_id=? ORDER BY DATE(x) DESC LIMIT 1",
                                 [orderbook_id]).fetchone()
 
         # build first fund_chart_data
         if last_update is None:
-            head = avanza_api.get_fund_chart(orderbook_id, start_date, start_date)
+            fund_start_date = f[2]
+            head = avanza_api.get_fund_chart(orderbook_id, fund_start_date, fund_start_date)
+            head['name'] = f[1]  # fix avanza encoding bug
             if len(head['dataSerie']) == 0:
                 raise ValueError("There are no entry at start date")
-            if head['dataSerie'][0]['y'] != 0:
-                raise ValueError("Start value of fund is not zero")  # todo: check if this is possible
             if head['dataSerie'][0]['y'] is None:
                 raise ValueError("Start value of fund is none")  # todo: check if this is possible
+            if head['dataSerie'][0]['y'] != 0:
+                logger.log(f"""Warning: Start value of fund {orderbook_id} "{f[1]}" is """
+                           f"""not zero ({head['dataSerie'][0]['y']})""")
+                head['dataSerie'][0]['y'] = 0
         else:
             d = isoparse(last_update[1])
             x = int(d.timestamp() * 1000)
@@ -114,17 +127,13 @@ class Avanza:
             if stop > stop_date:
                 stop = stop_date
             b = avanza_api.get_fund_chart(orderbook_id, start.isoformat(), stop.isoformat())
+            b['name'] = f[1]  # fix avanza encoding bug
             b['dataSerie'] = _dataserie_strip_none(b['dataSerie'])
             head = _append_fund_chart(head, b)
 
         # insert "head" to sql db
-        from_zone = tz.gettz('UTC')
-        to_zone = tz.gettz('Europe/Stockholm')
-
-        fund_chart_values = [(orderbook_id, dt.datetime.utcfromtimestamp(
-            v['x'] / 1000).replace(tzinfo=from_zone).astimezone(to_zone).isoformat(), v['y'] / 100 + 1)
-            for v in head['dataSerie']]
-
+        fund_chart_values = [(orderbook_id, _timestamp_to_datetime(v['x']).isoformat(), round(v['y'] / 100 + 1, 8))
+                             for v in head['dataSerie']]
         db_utils.tuplelist_to_sql(self.cache_db, 'fund_chart', fund_chart_values)
 
     def get_fund_chart(self, orderbook_id: int) -> pd.DataFrame:
@@ -186,9 +195,28 @@ class Avanza:
         return db_utils.sql_to_df(self.cache_db, 'fund_list')
 
 
+def _timestamp_to_datetime(avanza_timestamp: int) -> dt.datetime:
+    from_zone = tz.gettz('UTC')
+    to_zone = tz.gettz('Europe/Stockholm')
+    time = dt.datetime.utcfromtimestamp(avanza_timestamp / 1000).replace(tzinfo=from_zone).astimezone(to_zone)
+    return time
+
+
+def _aquire_start_date(orderbook_id: int) -> dt.date:
+    fund_data = avanza_api.get_fund_chart(orderbook_id, '1900-01-01', dt.date.today().isoformat())
+    ds = _dataserie_strip_none(fund_data['dataSerie'])
+    first_time = _timestamp_to_datetime(ds[0]['x'])
+    start = first_time.date() - dt.timedelta(days=180)
+    stop = first_time.date() + dt.timedelta(days=180)
+    fund_data2 = avanza_api.get_fund_chart(orderbook_id, start.isoformat(), stop.isoformat())
+    ds2 = _dataserie_strip_none(fund_data2['dataSerie'])
+    start_time = _timestamp_to_datetime(ds2[0]['x'])
+    return start_time.date()
+
+
 def _dataserie_strip_none(data_serie: dict) -> dict:
     i = 0
-    for n in range(0, len(data_serie)):
+    for n in range(len(data_serie)):
         if data_serie[n]['y'] is not None:
             break
         else:

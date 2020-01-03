@@ -9,6 +9,7 @@ import traceback
 import json
 import mailer
 import plotter
+import os
 
 
 class Result(object):
@@ -87,7 +88,7 @@ def job(cfg: dict) -> bool:
     # Fetch all raw data
     avanza_client = avanza.Avanza('cache.db')
     if cfg['fetch']:
-        avanza_client.fetch_all()
+        avanza_client.fetch_all(cfg['Blacklist'])
     totp_code = totp.totp(cfg['AvanzaPrivateKey'])
     if not avanza_client.login(cfg['AvanzaUsername'], cfg['AvanzaPassword'], totp_code):
         logger.error("Could not sign in")
@@ -137,6 +138,10 @@ def main(args: argparse.Namespace) -> None:
     cfg['mail'] = args.mail
     cfg['fetch'] = args.fetch
 
+    if args.clearcache:
+        if os.path.exists('cache.db'):
+            os.remove('cache.db')
+
     if not args.daemon:
         job_wrapper(cfg)
     else:
@@ -153,6 +158,7 @@ if __name__ == '__main__':
     parser.add_argument('-c', '--config', default='settings.json', help="Path to config file")
     parser.add_argument('--mail', action='store_true', help="Send report with email")
     parser.add_argument('--fetch', default=False, action='store_true', help="Update market data")
+    parser.add_argument('--clearcache', default=False, action='store_true', help="Clear old market data")
 
     args = parser.parse_args()
     logger.log("called with " + str(args))

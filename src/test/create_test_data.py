@@ -73,9 +73,7 @@ def create_fund_chart_data(orderbook_id, start_date, stop_date):
     if not response.ok:
         raise ValueError("Connection problems?")
 
-    start_date_short = start_date.replace('-', '')
-    stop_date_short = stop_date.replace('-', '')
-    with open(dir_path + f"""/fund_chart_{orderbook_id}_{start_date_short}_{stop_date_short}.json""", 'w') as f:
+    with open(dir_path + f"""/fund_chart_{orderbook_id}_{start_date}_{stop_date}.json""", 'w') as f:
         json.dump(response.json(), f)
 
 
@@ -87,18 +85,45 @@ def main(args):
     for n in funds:
         create_fund_data(n)
 
-    create_fund_chart_data(377804, "2012-10-19", "2012-10-19")
-    create_fund_chart_data(377804, "2012-10-20", "2013-10-15")
-    create_fund_chart_data(377804, "2013-10-16", "2014-10-11")
-    create_fund_chart_data(377804, "2014-10-12", "2015-10-07")
-    create_fund_chart_data(377804, "2015-10-08", "2016-10-02")
-    create_fund_chart_data(377804, "2016-10-03", "2017-09-28")
-    create_fund_chart_data(377804, "2017-09-29", "2018-09-24")
+    # test_fetch_instrument_chart
+    create_fund_chart_data(377804, "1900-01-01", "2019-12-28")
+    create_fund_chart_data(377804, "2012-04-04", "2013-03-30")
+    create_fund_chart_data(377804, "2012-10-10", "2012-10-10")
+    create_fund_chart_data(377804, "2012-10-11", "2013-10-06")
+    create_fund_chart_data(377804, "2013-10-07", "2014-10-02")
+    create_fund_chart_data(377804, "2014-10-03", "2015-09-28")
+    create_fund_chart_data(377804, "2015-09-29", "2016-09-23")
+    create_fund_chart_data(377804, "2016-09-24", "2017-09-19")
+    create_fund_chart_data(377804, "2017-09-20", "2018-09-15")
+    create_fund_chart_data(377804, "2018-09-16", "2019-09-11")
+    create_fund_chart_data(377804, "2019-09-12", "2019-12-28")
+
+    create_fund_chart_data(944976, "1900-01-01", "2019-12-28")
+    create_fund_chart_data(944976, "2018-09-02", "2019-08-28")
+    create_fund_chart_data(944976, "2019-03-26", "2019-03-26")
+    create_fund_chart_data(944976, "2019-03-27", "2019-12-28")
+
+    # test_fetch_instrument_chart: partial append test
+    create_fund_chart_data(377804, "2018-09-16", "2018-09-24")
     create_fund_chart_data(377804, "2018-09-25", "2019-09-20")
     create_fund_chart_data(377804, "2019-09-21", "2019-12-28")
-    create_fund_chart_data(377804, "2019-12-24", "2019-12-29")
-    create_fund_chart_data(944976, "2019-04-01", "2019-04-01")
-    create_fund_chart_data(944976, "2019-04-02", "2019-12-28")
+
+    # test_fetch_instrument: empty append
+    create_fund_chart_data(377804, "2019-12-28", "2019-12-29")
+
+    # test_aquire_start_date
+    create_fund_chart_data(32, "1900-01-01", "2019-12-28")
+    create_fund_chart_data(32, "1998-06-04", "1999-05-30")
+    create_fund_chart_data(35, "1900-01-01", "2019-12-28")
+    create_fund_chart_data(35, "1993-07-05", "1994-06-30")
+    create_fund_chart_data(38, "1900-01-01", "2019-12-28")
+    create_fund_chart_data(38, "1997-10-03", "1998-09-28")
+    create_fund_chart_data(351, "1900-01-01", "2019-12-28")
+    create_fund_chart_data(351, "2015-06-04", "2016-05-29")
+
+    # test append_fund_chart
+    create_fund_chart_data(377804, "2012-10-20", "2013-10-15")
+    create_fund_chart_data(377804, "2013-10-16", "2014-10-11")
 
 
 if __name__ == '__main__':

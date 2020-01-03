@@ -47,8 +47,8 @@ def request_get(url, headers=None, data=None) -> MockResponse:
         return MockResponse(content)
     elif o.path.startswith('/_cqbe/fund/chart/'):
         orderbook_id = o.path.split('/')[4]
-        from_date = o.path.split('/')[5].replace('-', '')
-        to_date = o.path.split('/')[6].replace('-', '')
+        from_date = o.path.split('/')[5]
+        to_date = o.path.split('/')[6]
         content = get_file_content(f'''fund_chart_{orderbook_id}_{from_date}_{to_date}.json''')
         return MockResponse(content)
     else:
