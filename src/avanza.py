@@ -70,13 +70,21 @@ class Avanza:
         fund_list = avanza_api.get_fund_list()
         filtred_fund_list = [x for x in fund_list if x['orderbookId'] not in blacklist]
 
+        skipping = []
         # fix broken avanza start_date
         for i in range(len(filtred_fund_list)):
             logger.log(f'''Fetch start_date ({i+1}/{len(filtred_fund_list)}) for '''
                        f'''{filtred_fund_list[i]['orderbookId']} "{filtred_fund_list[i]['name']}"''')
-            filtred_fund_list[i]['startDate'] = _aquire_start_date(filtred_fund_list[i]['orderbookId']).isoformat()
+            start_date = _aquire_start_date(filtred_fund_list[i]['orderbookId'])
+            if start_date is not None:
+                filtred_fund_list[i]['startDate'] = start_date.isoformat()
+            else:
+                logger.log(f'''Skipping {filtred_fund_list[i]['orderbookId']} "{filtred_fund_list[i]['name']}"'''
+                           f''' due to no data''')
+                skipping.append(filtred_fund_list[i]['orderbookId'])
 
-        fund_list_values = [(x['orderbookId'], x['name'], x['startDate']) for x in filtred_fund_list]
+        fund_list_values = [(x['orderbookId'], x['name'], x['startDate']) for x in filtred_fund_list
+                            if x['orderbookId'] not in skipping]
         db_utils.tuplelist_to_sql(self.cache_db, 'fund_list', fund_list_values)
 
     def fetch_instrument_chart(self, orderbook_id: int) -> None:
@@ -205,6 +213,8 @@ def _timestamp_to_datetime(avanza_timestamp: int) -> dt.datetime:
 def _aquire_start_date(orderbook_id: int) -> dt.date:
     fund_data = avanza_api.get_fund_chart(orderbook_id, '1900-01-01', dt.date.today().isoformat())
     ds = _dataserie_strip_none(fund_data['dataSerie'])
+    if len(ds) < 1:
+        return None
     first_time = _timestamp_to_datetime(ds[0]['x'])
     start = first_time.date() - dt.timedelta(days=180)
     stop = first_time.date() + dt.timedelta(days=180)
