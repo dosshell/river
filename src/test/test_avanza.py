@@ -9,6 +9,7 @@ import pandas as pd
 import json
 import datetime as dt
 from freezegun import freeze_time
+import os
 
 
 class TestAvanza(unittest.TestCase):
@@ -38,49 +39,74 @@ class TestAvanza(unittest.TestCase):
         fund_list = avanza_client.get_fund_list()
         self.assertTrue(type(fund_list) is pd.DataFrame)
 
+    @freeze_time("2019-12-28")
     @patch('requests.get', new=test.requests_mock.request_get)
     def test_fetch_fund_list(self):
         avanza_client = avanza.Avanza()
         self.assertEqual(len(avanza_client.get_fund_list()), 0)
         avanza_client.fetch_fund_list()
-        self.assertEqual(len(avanza_client.get_fund_list()), 2)
+        fund_list = avanza_client.get_fund_list()
+        self.assertEqual(len(fund_list), 2)
+
+        avanza_client2 = avanza.Avanza()
+        avanza_client2.fetch_fund_list(blacklist=[377804])
+        fund_list2 = avanza_client2.get_fund_list()
+        self.assertEqual(len(fund_list2), 1)
+
+    @freeze_time("2019-12-28")
+    @patch('requests.get', new=test.requests_mock.request_get)
+    def test_aquire_start_date(self):
+        orderbook_ids = {
+            32: dt.date(1998, 12, 31),
+            35: dt.date(1994, 1, 10),
+            38: dt.date(1998, 4, 22),
+            351: dt.date(2015, 12, 11)
+        }
+        for k, v in orderbook_ids.items():
+            self.assertEqual(avanza._aquire_start_date(k), v)
 
     @patch('requests.get', new=test.requests_mock.request_get)
     def test_fetch_instrument_chart(self):
         orderbook_id = 377804
         avanza_client = avanza.Avanza()
+
+        # test that we can not fetch instruments before fund list
         with self.assertRaises(ValueError):
             avanza_client.fetch_instrument_chart(orderbook_id)
-        avanza_client.fetch_fund_list()
+
+        # test to fetch fund list and instruments
         with freeze_time(lambda: dt.datetime(2019, 12, 28)):
+            avanza_client.fetch_fund_list()
             avanza_client.fetch_instrument_chart(orderbook_id)
 
         c = avanza_client.cache_db.cursor()
-        a = c.execute('select * from fund_chart where orderbook_id=377804').fetchall()
-        self.assertEqual(len(a), 1776)
-        self.assertEqual(a[-1][1], '2019-12-23T00:00:00+01:00')
-        self.assertAlmostEqual(a[-1][2], 2.0873)
+        ds_fullfetch = c.execute(f'select * from fund_chart where orderbook_id={orderbook_id}').fetchall()
+        self.assertEqual(len(ds_fullfetch), 1781)
+        self.assertEqual(ds_fullfetch[-1][1], '2019-12-27T00:00:00+01:00')
+        self.assertAlmostEqual(ds_fullfetch[-1][2], 2.085)
 
+        # test partial appending
         avanza_client2 = avanza.Avanza()
-        avanza_client2.fetch_fund_list()
+        with freeze_time(lambda: dt.datetime(2019, 12, 28)):
+            avanza_client2.fetch_fund_list()
         with freeze_time(lambda: dt.datetime(2018, 9, 24)):
-            avanza_client2.fetch_instrument_chart(377804)
+            avanza_client2.fetch_instrument_chart(orderbook_id)
         c2 = avanza_client2.cache_db.cursor()
-        a2 = c2.execute('select * from fund_chart where orderbook_id=377804').fetchall()
+        a2 = c2.execute(f'select * from fund_chart where orderbook_id={orderbook_id}').fetchall()
         self.assertEqual(a2[-2][1], '2018-09-21T00:00:00+02:00')
         self.assertAlmostEqual(a2[-2][2], 1.8557)
 
         with freeze_time(lambda: dt.datetime(2019, 12, 28)):
-            avanza_client2.fetch_instrument_chart(377804)
-        a3 = c2.execute('select * from fund_chart where orderbook_id=377804').fetchall()
-        self.assertEqual(len(a), len(a3))
-        self.assertEqual(a, a3)
+            avanza_client2.fetch_instrument_chart(orderbook_id)
+        ds_doublefetch = c2.execute(f'select * from fund_chart where orderbook_id={orderbook_id}').fetchall()
+        self.assertEqual(len(ds_fullfetch), len(ds_doublefetch))
+        self.assertEqual(ds_fullfetch, ds_doublefetch)
 
-        # test empty
+        # test no append
         with freeze_time(lambda: dt.datetime(2019, 12, 29)):
-            avanza_client.fetch_instrument_chart(377804)
-        a4 = c.execute('select * from fund_chart where orderbook_id=377804').fetchall()
-        self.assertEqual(a, a4)
+            avanza_client.fetch_instrument_chart(orderbook_id)
+        a4 = c.execute(f'select * from fund_chart where orderbook_id={orderbook_id}').fetchall()
+        self.assertEqual(ds_fullfetch, a4)
 
     @freeze_time("2019-12-28")
     @patch('requests.get', new=test.requests_mock.request_get)
@@ -104,9 +130,10 @@ class TestAvanza(unittest.TestCase):
 
     @patch('requests.get', new=test.requests_mock.request_get)
     def test_append_fund_chart(self):
-        with open('test/data/fund_chart_377804_20121020_20131015.json') as f:
+        dir_path = os.path.dirname(os.path.realpath(__file__)) + '/data'
+        with open(dir_path + '/fund_chart_377804_2012-10-20_2013-10-15.json') as f:
             chart1_org = json.load(f)
-        with open('test/data/fund_chart_377804_20131016_20141011.json') as f:
+        with open(dir_path + '/fund_chart_377804_2013-10-16_2014-10-11.json') as f:
             chart2_org = json.load(f)
         chart3 = chart1_org.copy()
         chart3['toDate'] = '2013-10-13'
