@@ -33,9 +33,10 @@ def tuplelist_to_sql(conn: apsw.Connection, table_name: str, values: List[Tuple]
 def create_tables(conn: apsw.Connection) -> None:
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS fund_list(
-                    orderbook_id INTEGER PRIMARY KEY NOT NULL,
-                    name TEXT NOT NULL UNIQUE,
-                    start_date TEXT NOT NULL
+                    "orderbook_id" INTEGER PRIMARY KEY NOT NULL,
+                    "name" TEXT NOT NULL UNIQUE,
+                    "start_date" TEXT NOT NULL,
+                    "active" BOOLEAN NOT NULL DEFAULT 1 CHECK (active IN (0,1))
                     )''')
     c.execute('''CREATE TABLE IF NOT EXISTS fund_chart(
                     orderbook_id INTEGER NOT NULL,

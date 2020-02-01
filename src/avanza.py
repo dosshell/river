@@ -67,8 +67,28 @@ class Avanza:
 
     def fetch_fund_list(self, blacklist: List[int] = []) -> None:
         logger.log("Fetch fund list")
+        prev_list = self.get_fund_list()
         fund_list = avanza_api.get_fund_list()
+        fund_list2 = avanza_api.get_fund_list()
+
+        if fund_list != fund_list2:
+            raise ValueError("Fund list data changed during fetch")
+
         filtred_fund_list = [x for x in fund_list if x['orderbookId'] not in blacklist]
+
+        # mark inactive funds
+        current_ids = [x['orderbookId'] for x in filtred_fund_list]
+        previous_ids = prev_list['orderbook_id'].tolist()
+        new_ids = list(set(current_ids) - set(previous_ids))
+        deactivated_ids = list(set(previous_ids) - set(current_ids))
+        logger.log(f"New funds: {new_ids}")
+        logger.log(f"Deactivated funds: {deactivated_ids}")
+        if len(deactivated_ids) > 0:
+            c = self.cache_db.cursor()
+            c.execute("BEGIN TRANSACTION")
+            c.executemany("""UPDATE "fund_list" SET active = 0 WHERE orderbook_id = (?)""",
+                          [[x] for x in deactivated_ids])
+            c.execute("COMMIT")
 
         skipping = []
         # fix broken avanza start_date
@@ -83,7 +103,7 @@ class Avanza:
                            f''' due to no data''')
                 skipping.append(filtred_fund_list[i]['orderbookId'])
 
-        fund_list_values = [(x['orderbookId'], x['name'], x['startDate']) for x in filtred_fund_list
+        fund_list_values = [(x['orderbookId'], x['name'], x['startDate'], 1) for x in filtred_fund_list
                             if x['orderbookId'] not in skipping]
         db_utils.tuplelist_to_sql(self.cache_db, 'fund_list', fund_list_values)
 
