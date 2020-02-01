@@ -15,4 +15,5 @@ docker run \
 	-d \
 	registry.gitlab.com/dosshell/river:latest \
 	--mail \
-	--daemon
+	--daemon \
+	--fetch
