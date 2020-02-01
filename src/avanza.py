@@ -70,8 +70,9 @@ class Avanza:
         prev_list = self.get_fund_list()
         fund_list = avanza_api.get_fund_list()
         fund_list2 = avanza_api.get_fund_list()
-
-        if fund_list != fund_list2:
+        list1_ids = [x['orderbookId'] for x in fund_list]
+        list2_ids = [x['orderbookId'] for x in fund_list2]
+        if list1_ids != list2_ids:
             raise ValueError("Fund list data changed during fetch")
 
         filtred_fund_list = [x for x in fund_list if x['orderbookId'] not in blacklist]
