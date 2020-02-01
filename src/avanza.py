@@ -88,7 +88,7 @@ class Avanza:
                            f''' due to no data''')
                 skipping.append(filtred_fund_list[i]['orderbookId'])
 
-        fund_list_values = [(x['orderbookId'], x['name'], x['startDate']) for x in filtred_fund_list
+        fund_list_values = [(x['orderbookId'], x['name'], x['startDate'], 1) for x in filtred_fund_list
                             if x['orderbookId'] not in skipping]
         db_utils.tuplelist_to_sql(self.cache_db, 'fund_list', fund_list_values)
 
