@@ -3,7 +3,12 @@ variables:
   LC_ALL: C.UTF-8
   LANG: C.UTF-8
 
+stages:
+  - test
+  - package
+
 crlf_test:
+  stage: test
   image: alpine:3.10
   only:
     - merge_requests
@@ -13,6 +18,7 @@ crlf_test:
     - ./ci/test_crlf.sh
 
 flake8:
+  stage: test
   image: python:3.6-slim-stretch
   only:
     - merge_requests
@@ -21,6 +27,7 @@ flake8:
     - ./ci/test_flake8.sh
 
 unit_tests:
+  stage: test
   image: python:3.6-slim-stretch
   only:
     - merge_requests
@@ -29,6 +36,7 @@ unit_tests:
     - ./ci/test_unit_tests.sh
 
 docker_test:
+  stage: test
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
@@ -39,6 +47,7 @@ docker_test:
     - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --no-push 
 
 deploy:
+  stage: package
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
