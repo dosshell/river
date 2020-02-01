@@ -19,7 +19,9 @@
             "console": "integratedTerminal",
             "args": [
                 "-c",
-                "../settings.json"
+                "../settings.json",
+                "--cachefile",
+                "../cache.db"
             ]
         },
         {
@@ -31,7 +33,9 @@
             "args": [
                 "-c",
                 "../settings.json",
-                "--mail"
+                "--mail",
+                "--cachefile",
+                "../cache.db"
             ]
         },
         {
@@ -44,7 +48,9 @@
                 "-c",
                 "../settings.json",
                 "--fetch",
-                "--clearcache"
+                "--clearcache",
+                "--cachefile",
+                "../cache.db"
             ]
         }
     ]

@@ -86,7 +86,7 @@ def job_wrapper(cfg: dict) -> None:
 
 def job(cfg: dict) -> bool:
     # Fetch all raw data
-    avanza_client = avanza.Avanza('cache.db')
+    avanza_client = avanza.Avanza(cfg['cachefile'])
     if cfg['fetch']:
         avanza_client.fetch_all(cfg['Blacklist'])
     totp_code = totp.totp(cfg['AvanzaPrivateKey'])
@@ -137,10 +137,11 @@ def main(args: argparse.Namespace) -> None:
     cfg = settings.read_settings(args.config)
     cfg['mail'] = args.mail
     cfg['fetch'] = args.fetch
+    cfg['cachefile'] = args.cachefile
 
     if args.clearcache:
-        if os.path.exists('cache.db'):
-            os.remove('cache.db')
+        if os.path.exists(args.cachefile):
+            os.remove(args.cachefile)
 
     if not args.daemon:
         job_wrapper(cfg)
@@ -159,6 +160,7 @@ if __name__ == '__main__':
     parser.add_argument('--mail', action='store_true', help="Send report with email")
     parser.add_argument('--fetch', default=False, action='store_true', help="Update market data")
     parser.add_argument('--clearcache', default=False, action='store_true', help="Clear old market data")
+    parser.add_argument('--cachefile', default='./cache.db', help="Path to cache file")
 
     args = parser.parse_args()
     logger.log("called with " + str(args))
