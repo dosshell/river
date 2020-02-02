@@ -5,5 +5,11 @@
     "AvanzaUsername": "Your Avanza username",
     "AvanzaPassword": "Your Avanza password",
     "AvanzaPrivateKey": "Your private TOTP key",
-    "Blacklist": []
+    "Blacklist": [
+        334871,
+        891316,
+        891313,
+        1689,
+        2482
+    ]
 }
