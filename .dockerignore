@@ -1,5 +1,4 @@
 src/test
-src/data.db
-src/settings.json
-src/cache.db
-settings.json
+src/.vscode
+src/__pycache__
+src/.flake8

@@ -1,0 +1,15 @@
+{
+    "auth_file": "../auth.json",
+    "blacklist": [
+        334871,
+        891316,
+        891313,
+        1689,
+        2482
+    ],
+    "cache_file": "cache.db",
+    "daemon": true,
+    "email": true,
+    "email_to": "river.markus@lindeloew.se",
+    "fetch": true
+}

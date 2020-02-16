@@ -9,11 +9,11 @@ docker pull registry.gitlab.com/dosshell/river:latest
 docker run \
 	--name river \
 	-e TZ='Europe/Stockholm' \
-	-v $PWD/settings.json:/app/settings.json \
+	-v $PWD/config.json:/app/config.json \
+	-v $PWD/auth.json:/app/auth.json \
 	-v $PWD/cache.db:/app/cache.db \
 	--restart=unless-stopped \
 	-d \
 	registry.gitlab.com/dosshell/river:latest \
-	--mail \
-	--daemon \
-	--fetch
+	--config-file ../config.json \
+	"$@"

@@ -8,7 +8,9 @@ docker run \
 	--rm \
 	--name river-once \
 	-e TZ='Europe/Stockholm' \
-	-v $PWD/settings.json:/app/settings.json \
+	-v $PWD/config.json:/app/config.json \
+	-v $PWD/auth.json:/app/auth.json \
 	-v $PWD/cache.db:/app/cache.db \
 	registry.gitlab.com/dosshell/river:latest \
 	"$@"
+

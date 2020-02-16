@@ -12,6 +12,9 @@ from typing import List
 
 class Avanza:
     def __init__(self, cache_db: str = ':memory:'):
+        if cache_db is None:
+            cache_db = ':memory:'
+
         self.is_authed: bool = False
         self.customer_id: str = ''
         self.authentication_session: str = ''

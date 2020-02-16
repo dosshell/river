@@ -58,7 +58,7 @@ def generate_report_email(res: Result) -> str:
     return report
 
 
-def job_wrapper(cfg: dict) -> None:
+def job_wrapper(cfg: settings.Settings) -> None:
     '''Mostly a logger and error handle wrapper for the job function'''
 
     logger.flush()
@@ -76,21 +76,21 @@ def job_wrapper(cfg: dict) -> None:
     else:
         logger.error("Job returned atleast one error")
 
-    if logger.has_error and cfg['mail']:
+    if logger.has_error and cfg.email:
         logs = logger.flush()
         log = '\n'.join(logs)
-        mailer.send_text(log, "Bad news everyone!", cfg['RiverGmailUsername'], cfg['RiverGmailPassword'],
-                         cfg['UserEmail'])
+        mailer.send_text(log, "Bad news everyone!", cfg.gmail_username, cfg.gmail_password,
+                         cfg.email_to)
     logger.flush()
 
 
-def job(cfg: dict) -> bool:
+def job(cfg: settings.Settings) -> bool:
     # Fetch all raw data
-    avanza_client = avanza.Avanza(cfg['cachefile'])
-    if cfg['fetch']:
-        avanza_client.fetch_all(cfg['Blacklist'])
-    totp_code = totp.totp(cfg['AvanzaPrivateKey'])
-    if not avanza_client.login(cfg['AvanzaUsername'], cfg['AvanzaPassword'], totp_code):
+    avanza_client = avanza.Avanza(cfg.cache_file)
+    if cfg.fetch:
+        avanza_client.fetch_all(cfg.blacklist)
+    totp_code = totp.totp(cfg.avanza_private_key)
+    if not avanza_client.login(cfg.avanza_username, cfg.avanza_password, totp_code):
         logger.error("Could not sign in")
         return False
     logger.log("Login succeeded")
@@ -118,10 +118,10 @@ def job(cfg: dict) -> bool:
     report = generate_report_email(res)
 
     # Print report
-    if cfg['mail']:
+    if cfg.email:
         logger.log("Sending report")
         send_ok = mailer.send_html(report['msg'], None, "River Report", report['attachments'],
-                                   cfg['RiverGmailUsername'], cfg['RiverGmailPassword'], cfg['UserEmail'])
+                                   cfg.gmail_username, cfg.gmail_password, cfg.email_to)
         if not send_ok:
             return False
     else:
@@ -132,18 +132,17 @@ def job(cfg: dict) -> bool:
     return True
 
 
-def main(args: argparse.Namespace) -> None:
+def main(cfg: settings.Settings) -> None:
     logger.log("Unleashing the daemon of River Tam")
-    cfg = settings.read_settings(args.config)
-    cfg['mail'] = args.mail
-    cfg['fetch'] = args.fetch
-    cfg['cachefile'] = args.cachefile
 
-    if args.clearcache:
-        if os.path.exists(args.cachefile):
-            os.remove(args.cachefile)
+    if cfg.clear_cache:
+        if cfg.cache_file is None or cfg.cache_file == ':memory:':
+            logger.error("No cache-file to clear")
+        else:
+            if os.path.exists(cfg.cache_file):
+                os.remove(cfg.cache_file)
 
-    if not args.daemon:
+    if not cfg.daemon:
         job_wrapper(cfg)
     else:
         schedule.every().day.at("03:00").do(job_wrapper, cfg)
@@ -155,13 +154,23 @@ def main(args: argparse.Namespace) -> None:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description="River Tam. You’ve got tools, something sharp. Don’t be scared. I’m right here.")
-    parser.add_argument('-d', '--daemon', action='store_true', help="Unleash the Daemon")
-    parser.add_argument('-c', '--config', default='settings.json', help="Path to config file")
-    parser.add_argument('--mail', action='store_true', help="Send report with email")
-    parser.add_argument('--fetch', default=False, action='store_true', help="Update market data")
-    parser.add_argument('--clearcache', default=False, action='store_true', help="Clear old market data")
-    parser.add_argument('--cachefile', default='./cache.db', help="Path to cache file")
+    parser.add_argument('--auth-file', default=None, help="File with authentication credentials")
+    parser.add_argument('--blacklist', nargs='*', default=None, help="List of orderbook ids to block")
+    parser.add_argument('--cache-file', help="Path to cache file")
+    parser.add_argument('--clear-cache', action='store_true', default=None, help="Clear old market data")
+    parser.add_argument('--clear-cache-off', action='store_false', dest='clear_cache',
+                        help='Turn off clear-cache config')
+    parser.add_argument('--config-file', '-c', default=None, help="Path to config file")
+    parser.add_argument('--daemon', '-d', action='store_true', default=None, help="Unleash the Daemon")
+    parser.add_argument('--daemon-off', action='store_false', dest='daemon', help='Turn off daemon config')
+    parser.add_argument('--email', action='store_true', default=None, help="Send report with email")
+    parser.add_argument('--email-off', action='store_false', help='Turn off email config')
+    parser.add_argument('--email-to', nargs=1, default=None, help="Email address to send email to")
+    parser.add_argument('--fetch', action='store_true', default=None, help="Update market data")
+    parser.add_argument('--fetch-off', action='store_false', dest='fetch', help="Turn off fetch config")
 
     args = parser.parse_args()
-    logger.log("called with " + str(args))
-    main(args)
+    cfg = settings.Settings()
+    cfg.read_args(args)
+    logger.log("config: " + str(cfg))
+    main(cfg)
