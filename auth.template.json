@@ -1,0 +1,7 @@
+{
+    "gmail_username": "daemon.of.river.tam@gmail.com",
+    "gmail_password": "<gmail password for river>",
+    "avanza_username": "<your avanza username",
+    "avanza_password": "<your avanza password>",
+    "avanza_private_key": "<your private TOTP key>"
+}

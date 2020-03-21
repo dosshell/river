@@ -1,7 +1,6 @@
 import unittest
 import totp
 import settings
-import test.settings_mock
 from unittest.mock import patch
 import avanza
 import test.requests_mock
@@ -13,25 +12,21 @@ import os
 
 
 class TestAvanza(unittest.TestCase):
-    __cfg = {}
+    __cfg: settings.Settings = settings.Settings()
 
     @classmethod
-    @patch('settings.read_settings', new=test.settings_mock.read_settings)
     def setUpClass(cls):
-        cls.__cfg = settings.read_settings('settings.json')
+        cls.__cfg.avanza_username = '123456'
+        cls.__cfg.avanza_password = 'secret'
+        cls.__cfg.avanza_private_key = 'JBSWY3DPEHPK3PXP'
 
     @patch('requests.post', new=test.requests_mock.request_post)
     def test_login(self):
-        username = self.__cfg['AvanzaUsername']
-        password = self.__cfg['AvanzaPassword']
-        priv_key = self.__cfg['AvanzaPrivateKey']
-        totp_code = totp.totp(priv_key)
-        self.assertEqual(username, '123456')
-        self.assertEqual(password, 'secret')
+        totp_code = totp.totp(self.__cfg.avanza_private_key)
         self.assertIsNotNone(totp_code)
         avanza_client = avanza.Avanza()
         self.assertIsNotNone(avanza_client)
-        self.assertTrue(avanza_client.login(username, password, totp_code))
+        self.assertTrue(avanza_client.login(self.__cfg.avanza_username, self.__cfg.avanza_password, totp_code))
 
     @patch('requests.get', new=test.requests_mock.request_get)
     def test_get_fund_list(self):

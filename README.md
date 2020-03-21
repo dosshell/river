@@ -1,18 +1,21 @@
 # River Tam
 Two by two, hands of blue.
 
+## Daemon Mode
 03:00 UTC - Run full analyze and email result
 
 
-## Get started
+## Get Started
 
-- Create a config file
+- Create a config-file and an auth-file
 ```
-cp src/settings_template.json settings.json
-vim settings.json
+cp auth.template.json auth.json
+cp config.template.json config.json
+vim auth.json
+vim config.json
 ```
 
-- Start server
+- Start Server
 ```
 ./scripts/start_server.sh
 ```
@@ -28,13 +31,13 @@ Run script (will pull git to latest)
 
 - Run locally
 ```
-./scripts/run_local.sh -c ../settings.json [-d --mail --fetch]
+./scripts/run_local.sh --auth-file ../auth.json
 ```
 
 
-- Run as container
+- Run as Container
 ```
-scripts/run_container.sh -c settings.json [-d --mail --fetch]
+scripts/run_container.sh --config-file ../config.json --daemon-off
 ```
 
 
