@@ -17,15 +17,9 @@ vim config.json
 
 - Start Server
 ```
-./scripts/start_server.sh
+./scripts/run_server.sh
 ```
-
-## Update River to Latest
-Run script (will pull git to latest)
-```
-./scripts/update_server.sh
-```
-
+This will exit and remove any old river servers, it will build and run current checkout. Pull before execution to get latest and greatest River.
 
 ## Run River Manually
 

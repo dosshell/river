@@ -5,7 +5,9 @@ cd $MY_PATH/..
 
 docker stop river
 docker rm river
-docker pull registry.gitlab.com/dosshell/river:latest
+
+docker build -t registry.gitlab.com/dosshell/river:latest .
+
 docker run \
 	--name river \
 	-e TZ='Europe/Stockholm' \
@@ -17,3 +19,4 @@ docker run \
 	registry.gitlab.com/dosshell/river:latest \
 	--config-file ../config.json \
 	"$@"
+
