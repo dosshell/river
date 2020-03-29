@@ -1,22 +1,42 @@
 #!/bin/sh
 
-MY_PATH="`dirname \"$0\"`"
-cd $MY_PATH/..
+mydir="$(dirname "$0")"
+rootdir="$mydir/../"
+
+error=false
+if [ ! -f "$rootdir/config.json" ]; then
+    echo "Error: No config.json file found."
+    error=true
+fi
+if [ ! -f "$rootdir/auth.json" ]; then
+    echo "Error: No auth.json file found."
+    error=true
+fi
+if [ ! -f "$rootdir/cache.db" ]; then
+    echo "Error: No cache.db file found"
+    error=true
+fi
+if [ "$error" = true ]; then
+    exit
+fi
 
 docker stop river
 docker rm river
 
-docker build -t registry.gitlab.com/dosshell/river:latest .
+docker build -t registry.gitlab.com/dosshell/river:latest "$rootdir"
 
 docker run \
-	--name river \
-	-e TZ='Europe/Stockholm' \
-	-v $PWD/config.json:/app/config.json \
-	-v $PWD/auth.json:/app/auth.json \
-	-v $PWD/cache.db:/app/cache.db \
-	--restart=unless-stopped \
-	-d \
-	registry.gitlab.com/dosshell/river:latest \
-	--config-file ../config.json \
-	"$@"
+    --name river \
+    -e TZ='Europe/Stockholm' \
+    --mount type=bind,src="$rootdir/config.json",dst="/app/config.json",readonly \
+    --mount type=bind,src="$rootdir/auth.json",dst="/app/auth.json",readonly \
+    --mount type=bind,src="$rootdir/cache.db",dst="/app/cache.db" \
+    --restart=unless-stopped \
+    -d \
+    registry.gitlab.com/dosshell/river:latest \
+    --config-file /app/config.json \
+    --auth-file /app/auth.json \
+    --cache-file /app/cache.db \
+    --daemon \
+    "$@"
 

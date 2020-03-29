@@ -1,12 +1,14 @@
 # Use an official Python runtime as a parent image
 FROM python:3.6-slim-stretch
 
-WORKDIR /app/src
+WORKDIR /app
 
 COPY ./src /app/src
 COPY ./dep /app/dep
+COPY ./scripts /app/scripts
 
 RUN python -m pip install pipenv
-RUN python -m pipenv sync
+RUN cd src && python -m pipenv sync
 
-ENTRYPOINT ["pipenv", "run", "python", "-u", "river.py"]
+ENTRYPOINT ["/app/scripts/run_local.sh"]
+
