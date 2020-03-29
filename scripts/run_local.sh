@@ -1,8 +1,15 @@
 #!/bin/sh
+ 
+mydir="$(dirname "$0")"
+rootdir="$(readlink -f "$mydir/../")"
 
-MY_PATH="`dirname \"$0\"`"
-cd $MY_PATH/../src
+# Activate venv
+orgdir=$PWD
+cd $mydir/../src;
+v=$(pipenv --venv)
+cd $orgdir
+. $v/bin/activate
 
-python3 -m pip install pipenv
-python3 -m pipenv sync
-python3 -m pipenv run python river.py "$@"
+# RUN
+python -u "$rootdir/src/river.py" "$@"
+

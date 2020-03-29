@@ -1,6 +1,7 @@
 #!/bin/sh
 
-MY_PATH="`dirname \"$0\"`"
-cd $MY_PATH/..
+mydir="$(dirname "$0")"
+cd $mydir/..
 
 docker build -t registry.gitlab.com/dosshell/river:latest .
+
