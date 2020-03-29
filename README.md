@@ -22,28 +22,27 @@ vim config.json
 This will exit and remove any old river servers, it will build and run current checkout. Pull before execution to get latest and greatest River.
 
 
-## Run River Manually
+## Run River Manually with Pipenv
 Instead of starting a server daemon, you can run it directly once.
-
-- Run locally
 Requires python 3.6. (Use run_container.sh if you do not have it installed.)
 
-Install dependencies:
+- Install dependencies
 ```
 python3 -m pip install pipenv
 python3 -m pipenv sync
+```
 
-Run:
+- Run
 ```
 ./scripts/run_local.sh --auth-file auth.json --config-file config.json
 ```
 
-- Run once as Container
+## Run River Manually Once as Container
 Recommended if you do not have python 3.6 installed.
+Containers can only use the file paths ./auth.json, ./config.json and ./cache.db.
 ```
 ./scripts/run_container.sh --auth-file auth.json--config-file config.json
 ```
-Containers can only use the file paths ./auth.json, ./config.json and ./cache.db.
 
 
 ## Advanced usage
