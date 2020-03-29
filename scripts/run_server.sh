@@ -1,7 +1,7 @@
 #!/bin/sh
 
 mydir="$(dirname "$0")"
-rootdir="$mydir/../"
+rootdir="$(readlink -f "$mydir/../")"
 
 error=false
 if [ ! -f "$rootdir/config.json" ]; then
